@@ -14,14 +14,22 @@ public class CircularSection extends Section {
 
 
     public double getA() {
-        return Math.PI / 4 * (Math.pow(d, 2) - Math.pow(d - 2 * t, 2));
+        return Math.PI / 4 * (Math.pow(this.d, 2) - Math.pow(this.d - 2 * this.t, 2));
     }
 
     public double getIy() {
-        return Math.PI / 64 * (Math.pow(d, 4) - Math.pow(d - 2 * t, 4));
+        return Math.PI / 64 * (Math.pow(this.d, 4) - Math.pow(this.d - 2 * this.t, 4));
     }
 
     public double getIz() {
         return this.getIy();
+    }
+
+    public double getJ() {
+	    if (this.t == d / 2) {
+		    return Math.PI / 32 * Math.pow(this.d, 4);
+	    } else {
+		    return 4 * Math.pow(this.getA(), 2) * this.t / (Math.PI * (this.d - this.t));
+	    }
     }
 }

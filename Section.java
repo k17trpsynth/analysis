@@ -8,4 +8,6 @@ abstract public class Section {
     abstract public double getIy();
 
     abstract public double getIz();
+
+    abstract public double getJ();
 }
