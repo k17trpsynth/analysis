@@ -26,10 +26,10 @@ public class CircularSection extends Section {
     }
 
     public double getJ() {
-	    if (this.t == d / 2) {
-		    return Math.PI / 32 * Math.pow(this.d, 4);
-	    } else {
-		    return 4 * Math.pow(this.getA(), 2) * this.t / (Math.PI * (this.d - this.t));
-	    }
+        if (this.t == d / 2) {
+            return Math.PI / 32 * Math.pow(this.d, 4);
+        } else {
+            return 4 * Math.pow(this.getA(), 2) * this.t / (Math.PI * (this.d - this.t));
+        }
     }
 }

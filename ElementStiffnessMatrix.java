@@ -1,8 +1,8 @@
 import org.ejml.data.DMatrixSparseCSC;
 
-
 @SuppressWarnings({"serial", "unchecked"})
 public class ElementStiffnessMatrix extends DMatrixSparseCSC {
+
     ElementStiffnessMatrix(Member mem) {
         super(12, 12);
 
@@ -69,7 +69,9 @@ public class ElementStiffnessMatrix extends DMatrixSparseCSC {
     }
 
     public static void main(String[] args) {
-        Member mem = new Member(205000, 78000, 100, 100, 100, 100, 1000);
+        Material mat = new Material(205000, 78000, 7.8);
+        CircularSection sec = new CircularSection(10);
+        Member mem = new Member(mat, sec, new double[]{0, 0, 0}, new double[]{0, 0, 1000});
         ElementStiffnessMatrix k = new ElementStiffnessMatrix(mem);
         k.print();
     }
