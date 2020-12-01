@@ -1,4 +1,3 @@
-
 public class Material {
 
     private double E;
