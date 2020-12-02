@@ -7,11 +7,13 @@ public class Member {
     private final double Iz;
     private final double J;
     private final double L;
+    private final int indexI;
+    private final int indexJ;
     private double[] nodeI;
     private double[] nodeJ;
     private double theta;
 
-    Member(Material mat, Section sec, double[] nodeI, double[] nodeJ, double theta) {
+    Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta) {
         this.E = mat.getE();
         this.G = mat.getG();
         this.A = sec.getA();
@@ -19,6 +21,8 @@ public class Member {
         this.Iz = sec.getIz();
         this.J = sec.getJ();
         this.L = Math.sqrt(Math.pow(nodeI[0] - nodeJ[0], 2) + Math.pow(nodeI[1] - nodeJ[1], 2) + Math.pow(nodeI[2] - nodeJ[2], 2));
+        this.indexI = indexI;
+        this.indexJ = indexJ;
         this.nodeI = nodeI;
         this.nodeJ = nodeJ;
         this.theta = theta;
@@ -50,6 +54,14 @@ public class Member {
 
     public double getL() {
         return this.L;
+    }
+
+    public int getIndexI() {
+        return this.indexI;
+    }
+
+    public int getIndexJ() {
+        return this.indexJ;
     }
 
     public double[] getNodeI() {

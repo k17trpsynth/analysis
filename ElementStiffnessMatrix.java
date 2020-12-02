@@ -67,12 +67,4 @@ public class ElementStiffnessMatrix extends DMatrixSparseCSC {
         super.set(6 + 5, 6 + 1, -kmz2);
         super.set(6 + 5, 6 + 5, kmz3);
     }
-
-    public static void main(String[] args) {
-        Material mat = new Material(205000, 78000, 7.8);
-        CircularSection sec = new CircularSection(10);
-        Member mem = new Member(mat, sec, new double[]{0, 0, 0}, new double[]{0, 0, 1000});
-        ElementStiffnessMatrix k = new ElementStiffnessMatrix(mem);
-        k.print();
-    }
 }
