@@ -16,7 +16,7 @@ public class SmallTransformationMatrix extends DMatrixRMaj {
         t1.set(2, 1, -Math.sin(theta));
         t1.set(2, 2, Math.cos(theta));
 
-        if (l == 0 || m == 0) {
+        if (l == 0 && m == 0) {
             t2.set(0, 2, n);
             t2.set(1, 0, n);
             t2.set(2, 1, 1);
