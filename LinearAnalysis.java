@@ -50,11 +50,15 @@ public class LinearAnalysis {
         this.createStiffnessMatrix();
         LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> solver = LinearSolverFactory_DSCC.qr(FillReducing.NONE);
         System.out.println("f = ");
-        f.print();
+        this.f.print();
         System.out.println("K = ");
-        K.print();
-        solver.setA(K);
-        solver.solve(f, d);
+        this.K.print();
+        DMatrixRMaj KInv = new DMatrixRMaj(this.freeDispSize, this.freeDispSize);
+        CommonOps_DSCC.invert(this.K, KInv);
+        System.out.println("KInv = ");
+        KInv.print();
+        solver.setA(this.K);
+        solver.solve(this.f, this.d);
     }
 
     public OutputDataset export() {
@@ -100,7 +104,7 @@ public class LinearAnalysis {
                 fGravityLocal.set(3, 0);
                 fGravityLocal.set(4, gravityLocal.get(2) * Math.pow(mem.getL(), 2) / 12);
                 fGravityLocal.set(5, -gravityLocal.get(1) * Math.pow(mem.getL(), 2) / 12);
-                fGravityLocal.set(6, -gravityLocal.get(0) * mem.getL() / 2);
+                fGravityLocal.set(6, gravityLocal.get(0) * mem.getL() / 2);
                 fGravityLocal.set(7, gravityLocal.get(1) * mem.getL() / 2);
                 fGravityLocal.set(8, gravityLocal.get(2) * mem.getL() / 2);
                 fGravityLocal.set(9, 0);
@@ -140,34 +144,44 @@ public class LinearAnalysis {
         this.input.getElements().keySet().forEach((Integer elementNum) -> {
             Member mem = this.input.getElements().get(elementNum);
             ElementStiffnessMatrix ki = new ElementStiffnessMatrix(mem);
+            DMatrixSparseCSC kiTmp = new DMatrixSparseCSC(12, 12);
+            DMatrixSparseCSC kiGlobal = new DMatrixSparseCSC(12, 12);
+            double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();
+            double m = (mem.getNodeJ()[1] - mem.getNodeI()[1]) / mem.getL();
+            double n = (mem.getNodeJ()[2] - mem.getNodeI()[2]) / mem.getL();
+            double theta = mem.getTheta();
+            TransformationMatrix T = new TransformationMatrix(l, m, n, theta);
+            DMatrixSparseCSC TT = new DMatrixSparseCSC(12, 12);
+            CommonOps_DSCC.transpose(T, TT, null);
+            CommonOps_DSCC.mult(ki, T, kiTmp);
+            CommonOps_DSCC.mult(TT, kiTmp, kiGlobal);
             DMatrixRMaj Ki = new DMatrixRMaj(6 * this.size, 6 * this.size);
             for (int i = 0; i < 6; i++) {
                 if (i >= 3) {
                     if (!this.input.getConnections().containsKey(elementNum)
                             || (this.input.getConnections().containsKey(elementNum) && !this.input.getConnections().get(elementNum)[0][i - 3])) {
                         for (int j = 0; j < 6; j++) {
-                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, ki.get(i, j));
-                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, ki.get(i, 6 + j));
+                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, kiGlobal.get(i, j));
+                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, kiGlobal.get(i, 6 + j));
                         }
                     }
                     if (!this.input.getConnections().containsKey(elementNum)
                             || (this.input.getConnections().containsKey(elementNum) && !this.input.getConnections().get(elementNum)[1][i - 3])) {
                         for (int j = 0; j < 6; j++) {
-                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, ki.get(6 + i, j));
-                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, ki.get(6 + i, 6 + j));
+                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, kiGlobal.get(6 + i, j));
+                            Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, kiGlobal.get(6 + i, 6 + j));
                         }
                     }
                 } else {
                     for (int j = 0; j < 6; j++) {
-                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, ki.get(i, j));
-                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, ki.get(i, 6 + j));
-                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, ki.get(6 + i, j));
-                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, ki.get(6 + i, 6 + j));
+                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, kiGlobal.get(i, j));
+                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexI()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, kiGlobal.get(i, 6 + j));
+                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexI()) + j, kiGlobal.get(6 + i, j));
+                        Ki.set(6 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, 6 * this.nodeOrder.indexOf(mem.getIndexJ()) + j, kiGlobal.get(6 + i, 6 + j));
                     }
                 }
             }
             CommonOps_DDRM.addEquals(KAll, Ki);
-            KAll.print();
         });
 
         int countRow = 0;
