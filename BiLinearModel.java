@@ -33,7 +33,7 @@ public class BiLinearModel extends MaterialModel {
 
     public double getEpsilon(double sigma) {
         double epsilon = 0;
-        if (epsilon < epsilon0) {
+        if (sigma < sigma0) {
             if (E1 == 0) {
                 epsilon = epsilon0;
             } else {
