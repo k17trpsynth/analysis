@@ -1,21 +1,21 @@
 public class Material {
 
-    private double E;
-    private double G;
+    private MaterialModel model;
+    private double gamma;
     private double rho;
 
-    Material(double E, double G, double rho) {
-        this.E = E;
-        this.G = G;
+    Material(MaterialModel model, double gamma, double rho) {
+        this.model = model;
+        this.gamma = gamma;
         this.rho = rho;
     }
 
-    public double getE() {
-        return this.E;
+    public double getE(double sigma) {
+        return this.model.getE(sigma);
     }
 
-    public double getG() {
-        return this.G;
+    public double getG(double sigma) {
+        return this.getE(sigma) / 2 / (1 + gamma);
     }
 
     public double getRho() {

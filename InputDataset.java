@@ -22,8 +22,18 @@ public class InputDataset {
         this.confinementMap = new HashMap<>();
     }
 
-    public void setMaterial(String key, double E, double G, double rho) {
-        this.materialMap.put(key, new Material(E, G, rho));
+    public void setMaterial(String key, String materialType, double[] params, double gamma, double rho) {
+        MaterialModel model;
+        if (materialType == "linear") {
+            model = new LinearModel(params[0]);
+        } else if (materialType == "nonlinear") {
+            model = new BiLinearModel(params[0], params[1], params[2], params[3]);
+        } else {
+            model = null;
+            System.out.println("Material type: \"" + materialType + "\" is invalid.");
+            System.exit(1);
+        }
+        this.materialMap.put(key, new Material(model, gamma, rho));
     }
 
     public void setSection(String key, String sectionType, double[] params) {
@@ -37,6 +47,7 @@ public class InputDataset {
             }
         } else {
             System.out.println("Section type: \"" + sectionType + "\" is invalid.");
+            System.exit(1);
         }
     }
 
@@ -44,8 +55,8 @@ public class InputDataset {
         this.nodeMap.put(nodeNum, new double[]{x, y, z});
     }
 
-    public void setElement(int elementNum, String materialKey, String sectionKey, int i, int j, double theta) {
-        this.elementMap.put(elementNum, new Member(this.materialMap.get(materialKey), this.sectionMap.get(sectionKey), i, j, this.nodeMap.get(i), this.nodeMap.get(j), theta));
+    public void setElement(int elementNum, String materialKey, String sectionKey, int i, int j, double theta, double N0) {
+        this.elementMap.put(elementNum, new Member(this.materialMap.get(materialKey), this.sectionMap.get(sectionKey), i, j, this.nodeMap.get(i), this.nodeMap.get(j), theta, N0));
     }
 
     public void addConcentratedLoad(int nodeNum, double x, double y, double z) {

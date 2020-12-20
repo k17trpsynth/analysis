@@ -6,8 +6,8 @@ public class ElementStiffnessMatrix extends DMatrixSparseCSC {
     ElementStiffnessMatrix(Member mem) {
         super(12, 12);
 
-        double E = mem.getE();
-        double G = mem.getG();
+        double E = mem.getE(0);
+        double G = mem.getG(0);
         double A = mem.getA();
         double Iy = mem.getIy();
         double Iz = mem.getIz();

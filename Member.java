@@ -1,7 +1,6 @@
 public class Member {
 
-    private final double E;
-    private final double G;
+    private final Material mat;
     private final double A;
     private final double Iy;
     private final double Iz;
@@ -12,10 +11,10 @@ public class Member {
     private double[] nodeI;
     private double[] nodeJ;
     private double theta;
+    private final double N0;
 
-    Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta) {
-        this.E = mat.getE();
-        this.G = mat.getG();
+    Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta, double N0) {
+        this.mat = mat;
         this.A = sec.getA();
         this.Iy = sec.getIy();
         this.Iz = sec.getIz();
@@ -26,14 +25,15 @@ public class Member {
         this.nodeI = nodeI;
         this.nodeJ = nodeJ;
         this.theta = theta;
+        this.N0 = N0;
     }
 
-    public double getE() {
-        return this.E;
+    public double getE(double sigma) {
+        return this.mat.getE(sigma);
     }
 
-    public double getG() {
-        return this.G;
+    public double getG(double sigma) {
+        return this.mat.getG(sigma);
     }
 
     public double getA() {
@@ -74,5 +74,9 @@ public class Member {
 
     public double getTheta() {
         return this.theta;
+    }
+
+    public double getN0() {
+        return this.N0;
     }
 }
