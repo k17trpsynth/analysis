@@ -5,6 +5,10 @@ import org.ejml.dense.row.CommonOps_DDRM;
 @SuppressWarnings({"serial", "unchecked"})
 public class SmallTransformationMatrix extends DMatrixRMaj {
 
+    public SmallTransformationMatrix(double l, double m, double n) {
+        this(l, m, n, 0);
+    }
+
     public SmallTransformationMatrix(double l, double m, double n, double theta) {
         super(3, 3);
         DMatrixRMaj t1 = new DMatrixRMaj(3, 3);
