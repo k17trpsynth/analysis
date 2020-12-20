@@ -26,9 +26,9 @@ public class InputDataset {
 
     public void setMaterial(String key, String materialType, double[] params, double gamma, double rho) {
         MaterialModel model;
-        if (materialType == "linear") {
+        if (materialType.equals("linear")) {
             model = new LinearModel(params[0]);
-        } else if (materialType == "nonlinear") {
+        } else if (materialType.equals("nonlinear")) {
             model = new BiLinearModel(params[0], params[1], params[2], params[3]);
         } else {
             model = null;
