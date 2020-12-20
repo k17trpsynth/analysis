@@ -24,16 +24,7 @@ public class LinearAnalysis {
         this.input = input;
         this.output = new OutputDataset(input);
         this.size = input.getSize();
-        this.freeDispSize = 6 * this.size;
-
-        for (int nodeNum : input.getConfinements().keySet()) {
-            for (int i = 0; i < 6; i++) {
-                if (!input.getConfinements().get(nodeNum)[i]) {
-                    this.freeDispSize--;
-                }
-            }
-        }
-
+        this.freeDispSize = input.getFreeDispSize();
         this.nodeOrder = new ArrayList<>();
 
         for (int nodeNum : input.getNodes().keySet()) {

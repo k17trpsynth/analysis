@@ -11,6 +11,7 @@ public class InputDataset {
     private double[] gravityLoad;
     private HashMap<Integer, boolean[][]> connectionMap;
     private HashMap<Integer, boolean[]> confinementMap;
+    private int freeDispSize;
 
     InputDataset() {
         this.materialMap = new HashMap<>();
@@ -18,6 +19,7 @@ public class InputDataset {
         this.nodeMap = new HashMap<>();
         this.elementMap = new HashMap<>();
         this.concentratedLoadMap = new HashMap<>();
+        this.gravityLoad = new double[3];
         this.connectionMap = new HashMap<>();
         this.confinementMap = new HashMap<>();
     }
@@ -152,5 +154,17 @@ public class InputDataset {
 
     public HashMap<Integer, boolean[]> getConfinements() {
         return this.confinementMap;
+    }
+
+    public int getFreeDispSize() {
+        this.freeDispSize = 3 * this.getSize();
+        for (int nodeNum : this.getConfinements().keySet()) {
+            for (int i = 0; i < 3; i++) {
+                if (!this.getConfinements().get(nodeNum)[i]) {
+                    this.freeDispSize--;
+                }
+            }
+        }
+        return this.freeDispSize;
     }
 }
