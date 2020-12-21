@@ -50,7 +50,7 @@ public class TrussStiffnessMatrix extends DMatrixSparseCSC {
         CommonOps_DSCC.scale(-1, T, T);
         CommonOps_DSCC.add(1, Kg, 1, T, Kg, null, null);
 
-        double N0 = mem.getN0();
+        double N0 = sigma * A;
         double kn0 = N0 / L;
 
         CommonOps_DSCC.scale(kn0, Kg, Kg);
