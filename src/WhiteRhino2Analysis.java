@@ -15,7 +15,9 @@ public class WhiteRhino2Analysis {
         FileWriter writer = null;
 
         try {
-            String dataDir = new File(".").getAbsoluteFile().getParent() + "/data/";
+            String baseDir = new File(".").getAbsoluteFile().getParent();
+            String dataDir = baseDir + "/data/";
+            String outDir = baseDir + "/out/";
             reader = new BufferedReader(new FileReader(new File(dataDir + "coords.csv")));
             HashMap<Integer, ArrayList<Double>> coords = new HashMap<>();
             String line;
@@ -61,13 +63,11 @@ public class WhiteRhino2Analysis {
             input.setSection("T4-3", "circular", new double[]{27.5});
             input.setSection("T4-4", "circular", new double[]{24.9});
             input.setSection("T4-5", "circular", new double[]{24.9});
-            /*
             input.setSection("T5-1", "circular", new double[]{24.9});
             input.setSection("T5-2", "circular", new double[]{24.9});
             input.setSection("T5-3", "circular", new double[]{24.9});
             input.setSection("T5-4", "circular", new double[]{24.9});
             input.setSection("T5-5", "circular", new double[]{24.9});
-*/
 
             for (int nodeNum : coords.keySet()) {
                 double x = coords.get(nodeNum).get(0);
@@ -105,13 +105,11 @@ public class WhiteRhino2Analysis {
             input.setElement(23, "steel_wire", "T4-4", 4, 5, 0, prestresses.get("T4-4") * 1e3);
             input.setElement(24, "steel_wire", "T4-5", 5, 1, 0, prestresses.get("T4-5") * 1e3);
 
-            /*
             input.setElement(25, "steel_wire", "T5-1", 6, 11, 0, prestresses.get("T5-1") * 1e3);
             input.setElement(26, "steel_wire", "T5-2", 7, 11, 0, prestresses.get("T5-2") * 1e3);
             input.setElement(27, "steel_wire", "T5-3", 8, 11, 0, prestresses.get("T5-3") * 1e3);
             input.setElement(28, "steel_wire", "T5-4", 9, 11, 0, prestresses.get("T5-4") * 1e3);
             input.setElement(29, "steel_wire", "T5-5", 10, 11, 0, prestresses.get("T5-5") * 1e3);
-*/
 
             input.setConfinement(1, 0, 1, 1, 0, 0, 0);
             input.setConfinement(2, 0, 0, 1, 0, 0, 0);
@@ -128,14 +126,14 @@ public class WhiteRhino2Analysis {
             analysis.solve();
             OutputDataset output = analysis.export();
 
-            writer = new FileWriter(new File(dataDir + "displacement.csv"));
+            writer = new FileWriter(new File(outDir + "displacement.csv"));
 
             for (int i = 0; i < input.getFreeDispSize(); i++) {
                 writer.write(Double.toString(output.getDisplacements().get(i)) + "\n");
             }
             writer.close();
 
-            writer = new FileWriter(new File(dataDir + "axial_force.csv"));
+            writer = new FileWriter(new File(outDir + "axial_force.csv"));
             for (int elementNum : input.getElements().keySet()) {
                 writer.write(Double.toString(output.getForces().get(elementNum)) + "\n");
             }
