@@ -29,34 +29,44 @@ public class TrussLinearAnalysis {
         this.freeDispSize = input.getFreeDispSize();
         this.nodeOrder = new ArrayList<>();
 
-        for (int nodeNum : input.getNodes().keySet()) {
+        input.getNodes().keySet().forEach((nodeNum) -> {
             this.nodeOrder.add(nodeNum);
-        }
+        });
 
         this.f = new DMatrixRMaj(this.freeDispSize, 1);
         this.d = new DMatrixRMaj(this.freeDispSize, 1);
         this.n = new HashMap<>();
-        for (int elementNum : this.input.getElements().keySet()) {
+        this.input.getElements().keySet().forEach((elementNum) -> {
             this.n.put(elementNum, this.input.getElements().get(elementNum).getN0());
-        }
+        });
         this.K = new DMatrixSparseCSC(this.freeDispSize, this.freeDispSize);
     }
 
     public void solve() {
-        this.setForce();
         this.createStiffnessMatrix();
         LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> solver = LinearSolverFactory_DSCC.qr(FillReducing.NONE);
-        System.out.println("f = ");
-        this.f.print();
-        System.out.println("K = ");
-        this.K.print();
-        DMatrixRMaj KInv = new DMatrixRMaj(this.freeDispSize, this.freeDispSize);
-        CommonOps_DSCC.invert(this.K, KInv);
-        System.out.println("KInv = ");
-        KInv.print();
+        //System.out.println("f = ");
+        //this.f.print();
+        //System.out.println("K = ");
+        //this.K.print();
+        //DMatrixRMaj KInv = new DMatrixRMaj(this.freeDispSize, this.freeDispSize);
+        //CommonOps_DSCC.invert(this.K, KInv);
+        //System.out.println("KInv = ");
+        //KInv.print();
         solver.setA(this.K);
         solver.solve(this.f, this.d);
+        this.updateAxialForce();
+    }
 
+    public DMatrixRMaj getDisplacements() {
+        return this.d;
+    }
+
+    public HashMap<Integer, Double> getAxialForces() {
+        return this.n;
+    }
+
+    public void updateAxialForce() {
         double[] dAll = new double[3 * this.size];
         int count = 0;
         for (int i = 0; i < nodeOrder.size(); i++) {
@@ -71,7 +81,7 @@ public class TrussLinearAnalysis {
             }
         }
 
-        for (int elementNum : this.input.getElements().keySet()) {
+        this.input.getElements().keySet().forEach((elementNum) -> {
             Member mem = this.input.getElements().get(elementNum);
             double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();
             double m = (mem.getNodeJ()[1] - mem.getNodeI()[1]) / mem.getL();
@@ -85,12 +95,12 @@ public class TrussLinearAnalysis {
             dL += n * dAll[3 * this.nodeOrder.indexOf(mem.getIndexJ()) + 2];
             double dN = mem.getE(this.n.get(elementNum) / mem.getA()) * mem.getA() / mem.getL() * dL;
             this.n.replace(elementNum, this.n.get(elementNum) + dN);
-        }
-        System.out.println("n = [");
-        for (int elementNum : n.keySet()) {
-            System.out.println(n.get(elementNum));
-        }
-        System.out.println("]");
+        });
+        //System.out.println("n = [");
+        //this.n.keySet().forEach((elementNum) -> {
+        //    System.out.println(this.n.get(elementNum) * 1e-3);
+        //});
+        //System.out.println("]");
     }
 
     public OutputDataset export() {
@@ -100,17 +110,21 @@ public class TrussLinearAnalysis {
     }
 
     public void setForce() {
+        this.setForce(1);
+    }
+
+    public void setForce(double delta) {
         DMatrixRMaj fAll = new DMatrixRMaj(3 * this.size, 1);
 
         if (Objects.nonNull(this.input.getConcentratedLoads())) {
             DMatrixRMaj fConcentratedGlobal = new DMatrixRMaj(3 * this.size, 1);
 
-            for (Integer nodeNum : this.input.getConcentratedLoads().keySet()) {
+            this.input.getConcentratedLoads().keySet().forEach((nodeNum) -> {
                 double[] concentratedLoad = this.input.getConcentratedLoads().get(nodeNum);
                 for (int i = 0; i < 3; i++) {
-                    fConcentratedGlobal.set(3 * this.nodeOrder.indexOf(nodeNum) + i, concentratedLoad[i]);
+                    fConcentratedGlobal.set(3 * this.nodeOrder.indexOf(nodeNum) + i, delta * concentratedLoad[i]);
                 }
-            }
+            });
 
             CommonOps_DDRM.addEquals(fAll, fConcentratedGlobal);
         }
@@ -129,10 +143,11 @@ public class TrussLinearAnalysis {
                 DMatrixRMaj gravityLocal = new DMatrixRMaj(3, 1);
                 CommonOps_DDRM.mult(tInvT, gravityGlobal, gravityLocal);
                 DMatrixRMaj fGravityLocal = new DMatrixRMaj(3, 1);
+                final double g = 9.8;
 
-                fGravityLocal.set(0, gravityLocal.get(0) * mem.getL() / 2);
-                fGravityLocal.set(1, gravityLocal.get(1) * mem.getL() / 2);
-                fGravityLocal.set(2, gravityLocal.get(2) * mem.getL() / 2);
+                fGravityLocal.set(0, delta * mem.getRho() * 1e-6 * mem.getA() * g * gravityLocal.get(0) * mem.getL() / 2);
+                fGravityLocal.set(1, delta * mem.getRho() * 1e-6 * mem.getA() * g * gravityLocal.get(1) * mem.getL() / 2);
+                fGravityLocal.set(2, delta * mem.getRho() * 1e-6 * mem.getA() * g * gravityLocal.get(2) * mem.getL() / 2);
 
                 DMatrixRMaj fGravityGlobalElement = new DMatrixRMaj(3, 1);
                 SmallTransformationMatrix tT = new SmallTransformationMatrix(l, m, n);
@@ -152,7 +167,6 @@ public class TrussLinearAnalysis {
         for (int nodeNum : this.nodeOrder) {
             for (int i = 0; i < 3; i++) {
                 if (this.input.getConfinements().containsKey(nodeNum) && !this.input.getConfinements().get(nodeNum)[i]) {
-                    continue;
                 } else {
                     f.set(count, fAll.get(3 * this.nodeOrder.indexOf(nodeNum) + i));
                     count++;
@@ -185,7 +199,6 @@ public class TrussLinearAnalysis {
             for (int j = 0; j < 3 * this.size; j++) {
                 if ((this.input.getConfinements().containsKey(this.nodeOrder.get(i / 3)) && !this.input.getConfinements().get(this.nodeOrder.get(i / 3))[i % 3])
                         || (this.input.getConfinements().containsKey(this.nodeOrder.get(j / 3)) && !this.input.getConfinements().get(this.nodeOrder.get(j / 3))[j % 3])) {
-                    continue;
                 } else {
                     this.K.set(countRow, countColumn, KAll.get(i, j));
                     countColumn++;

@@ -36,6 +36,10 @@ public class Member {
         return this.mat.getG(sigma);
     }
 
+    public double getRho() {
+        return this.mat.getRho();
+    }
+
     public double getA() {
         return this.A;
     }
