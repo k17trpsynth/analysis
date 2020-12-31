@@ -18,7 +18,7 @@ public class WhiteRhino2Analysis {
             String baseDir = new File(".").getAbsoluteFile().getParent();
             String dataDir = baseDir + "/data/";
             String outDir = baseDir + "/out/";
-            reader = new BufferedReader(new FileReader(new File(dataDir + "coords.csv")));
+            reader = new BufferedReader(new FileReader(new File(dataDir + "coords_measured.csv")));
             HashMap<Integer, ArrayList<Double>> coords = new HashMap<>();
             String line;
             while (Objects.nonNull(line = reader.readLine())) {
@@ -30,7 +30,7 @@ public class WhiteRhino2Analysis {
             }
             reader.close();
 
-            reader = new BufferedReader(new FileReader(new File(dataDir + "prestresses.csv")));
+            reader = new BufferedReader(new FileReader(new File(dataDir + "prestresses_measured.csv")));
             HashMap<String, Double> prestresses = new HashMap<>();
             while (Objects.nonNull(line = reader.readLine())) {
                 String code = line.split(",")[0].replaceAll(" ", "");
@@ -117,7 +117,8 @@ public class WhiteRhino2Analysis {
             input.setConfinement(4, 1, 0, 1, 0, 0, 0);
             input.setConfinement(5, 0, 0, 1, 0, 0, 0);
 
-            input.addGravityLoad(0, 0, -1);
+            input.addConcentratedLoad(11, -36.1 * 49.2 / 265.2 * 1e3, 13.3 * 49.2 / 265.2 * 1e3, -262.3 * 49.2 / 265.2 * 1e3);
+            //input.addConcentratedLoad(11, -36.1 * 1e3, 13.3 * 1e3, -262.3 * 1e3);
 
             double delta = 0.01;
             //TrussLinearAnalysis analysis = new TrussLinearAnalysis(input);
@@ -133,11 +134,13 @@ public class WhiteRhino2Analysis {
             }
             writer.close();
 
+            /*
             writer = new FileWriter(new File(outDir + "axial_force.csv"));
             for (int elementNum : input.getElements().keySet()) {
                 writer.write(Double.toString(output.getForces().get(elementNum)) + "\n");
             }
             writer.close();
+*/
 
         } catch (IOException e) {
             e.printStackTrace();

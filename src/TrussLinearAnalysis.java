@@ -7,7 +7,6 @@ import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.interfaces.linsol.LinearSolverSparse;
 import org.ejml.sparse.FillReducing;
-import org.ejml.sparse.csc.CommonOps_DSCC;
 import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
 
 public class TrussLinearAnalysis {

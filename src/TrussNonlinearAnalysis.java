@@ -1,8 +1,11 @@
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.Objects;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
 
 public class TrussNonlinearAnalysis {
@@ -39,14 +42,27 @@ public class TrussNonlinearAnalysis {
     }
 
     public void solve() {
-        int step = 1;
-        while (step <= this.stepSize) {
-            System.out.println("step: " + step + " / " + stepSize);
-            linearAnalysis.solve();
-            CommonOps_DDRM.add(this.d, linearAnalysis.getDisplacements(), this.d);
-            step++;
+        String baseDir = new File(".").getAbsoluteFile().getParent();
+        String outDir = baseDir + "/out/";
+        try {
+            FileWriter writer = new FileWriter(new File(outDir + "axial_force.csv"));
+            int step = 1;
+            while (step <= this.stepSize) {
+                System.out.println("step: " + step + " / " + stepSize);
+                linearAnalysis.solve();
+                CommonOps_DDRM.add(this.d, linearAnalysis.getDisplacements(), this.d);
+                for (int elementNum : linearAnalysis.getAxialForces().keySet()) {
+                    writer.write(Double.toString((linearAnalysis.getAxialForces().get(elementNum) - this.input.getElements().get(elementNum).getN0()) * 1e-3));
+                    writer.write(",");
+                }
+                writer.write("\n");
+                step++;
+            }
+            writer.close();
+            this.n = linearAnalysis.getAxialForces();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        this.n = linearAnalysis.getAxialForces();
     }
 
     public OutputDataset export() {
