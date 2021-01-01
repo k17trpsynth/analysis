@@ -1,6 +1,5 @@
 package main;
 
-
 import data.StructureDataset;
 import solver.TrussNonlinearAnalysis;
 import java.io.File;
@@ -11,6 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import org.ejml.data.DMatrixRMaj;
+import org.ejml.dense.row.CommonOps_DDRM;
 
 public class WhiteRhino2Analysis {
 
@@ -159,19 +160,22 @@ public class WhiteRhino2Analysis {
             input.addConcentratedLoad(11, -36.1 * 49.2 / 265.2 * 1e3, 13.3 * 49.2 / 265.2 * 1e3, -262.3 * 49.2 / 265.2 * 1e3);
             //input.addConcentratedLoad(11, -36.1 * 1e3, 13.3 * 1e3, -262.3 * 1e3);
 
+            input.addGravityLoad(0, 0, -1);
+
+            input.isInEquilibrium();
+
             double delta = 0.01;
             //TrussLinearAnalysis analysis = new TrussLinearAnalysis(input);
             TrussNonlinearAnalysis analysis = new TrussNonlinearAnalysis(input, delta);
             analysis.solve();
 
-            /*
+ /*
             writer = new FileWriter(new File(outDir + "axial_force.csv"));
             for (int elementNum : input.getElements().keySet()) {
                 writer.write(Double.toString(output.getForces().get(elementNum)) + "\n");
             }
             writer.close();
-*/
-
+             */
         } catch (IOException e) {
             e.printStackTrace();
         }

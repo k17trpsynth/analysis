@@ -206,4 +206,39 @@ public class StructureDataset {
         }
         return this.freeDispSize;
     }
+
+    public boolean isInEquilibrium() {
+        HashMap<Integer, double[]> sumMap = new HashMap<>();
+        for (int nodeNum : this.getNodes().keySet()) {
+            double[] sum = new double[3];
+            for (int i = 0; i < 3; i++) {
+                sum[i] += this.concentratedLoadMap.get(nodeNum)[i];
+            }
+            sumMap.put(nodeNum, sum);
+        }
+        for (int elementNum : this.getElements().keySet()) {
+            double axialForce = this.getAxialForce(elementNum);
+            double[] nodeI = this.getElements().get(elementNum).getNodeI();
+            double[] nodeJ = this.getElements().get(elementNum).getNodeJ();
+            double L = this.getElements().get(elementNum).getL();
+            double l = (nodeI[0] - nodeJ[0]) / L;
+            double m = (nodeI[1] - nodeJ[1]) / L;
+            double n = (nodeI[2] - nodeJ[2]) / L;
+            sumMap.get(this.getElements().get(elementNum).getIndexI())[0] -= (l * axialForce);
+            sumMap.get(this.getElements().get(elementNum).getIndexI())[1] -= (m * axialForce);
+            sumMap.get(this.getElements().get(elementNum).getIndexI())[2] -= (n * axialForce);
+            sumMap.get(this.getElements().get(elementNum).getIndexJ())[0] += (l * axialForce);
+            sumMap.get(this.getElements().get(elementNum).getIndexJ())[1] += (m * axialForce);
+            sumMap.get(this.getElements().get(elementNum).getIndexJ())[2] += (n * axialForce);
+        }
+        System.out.println("sum = ");
+        for (int nodeNum : sumMap.keySet()) {
+            System.out.print("[");
+            for (double f : sumMap.get(nodeNum)) {
+                System.out.print(f + ", ");
+            }
+            System.out.println("]");
+        }
+        return true;
+    }
 }
