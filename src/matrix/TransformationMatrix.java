@@ -1,3 +1,6 @@
+package matrix;
+
+import matrix.SmallTransformationMatrix;
 import org.ejml.data.DMatrixSparseCSC;
 
 @SuppressWarnings({"serial", "unchecked"})
@@ -8,7 +11,7 @@ public class TransformationMatrix extends DMatrixSparseCSC {
         m.print();
     }
 
-    TransformationMatrix(double l, double m, double n, double theta) {
+    public TransformationMatrix(double l, double m, double n, double theta) {
         super(12, 12);
         SmallTransformationMatrix t = new SmallTransformationMatrix(l, m, n, theta);
 

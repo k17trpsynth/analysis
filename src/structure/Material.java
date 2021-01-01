@@ -1,10 +1,15 @@
+package structure;
+
+
+import structure.model.MaterialModel;
+
 public class Material {
 
     private MaterialModel model;
     private double gamma;
     private double rho;
 
-    Material(MaterialModel model, double gamma, double rho) {
+    public Material(MaterialModel model, double gamma, double rho) {
         this.model = model;
         this.gamma = gamma;
         this.rho = rho;

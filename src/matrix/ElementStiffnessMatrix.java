@@ -1,9 +1,12 @@
+package matrix;
+
+import structure.Member;
 import org.ejml.data.DMatrixSparseCSC;
 
 @SuppressWarnings({"serial", "unchecked"})
 public class ElementStiffnessMatrix extends DMatrixSparseCSC {
 
-    ElementStiffnessMatrix(Member mem) {
+    public ElementStiffnessMatrix(Member mem) {
         super(12, 12);
 
         double E = mem.getE(0);

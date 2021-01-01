@@ -1,11 +1,14 @@
+package matrix;
 
+
+import structure.Member;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.sparse.csc.CommonOps_DSCC;
 
 @SuppressWarnings({"serial", "unchecked"})
 public class TrussStiffnessMatrix extends DMatrixSparseCSC {
 
-    TrussStiffnessMatrix(Member mem, double sigma) {
+    public TrussStiffnessMatrix(Member mem, double sigma) {
         super(6, 6);
 
         double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();

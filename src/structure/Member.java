@@ -1,3 +1,8 @@
+package structure;
+
+
+import structure.section.Section;
+
 public class Member {
 
     private final Material mat;
@@ -12,7 +17,7 @@ public class Member {
     private double[] nodeJ;
     private double theta;
 
-    Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta) {
+    public Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta) {
         this.mat = mat;
         this.A = sec.getA();
         this.Iy = sec.getIy();

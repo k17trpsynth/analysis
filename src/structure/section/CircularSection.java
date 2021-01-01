@@ -1,13 +1,15 @@
+package structure.section;
+
 public class CircularSection extends Section {
 
     private double d;
     private double t;
 
-    CircularSection(double d) {
+    public CircularSection(double d) {
         this(d, d / 2);
     }
 
-    CircularSection(double d, double t) {
+    public CircularSection(double d, double t) {
         this.d = d;
         this.t = t;
     }

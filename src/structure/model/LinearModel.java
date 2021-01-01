@@ -1,9 +1,11 @@
+package structure.model;
+
 
 public class LinearModel extends MaterialModel {
 
     private double E;
 
-    LinearModel(double E) {
+    public LinearModel(double E) {
         this.E = E;
     }
 

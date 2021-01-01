@@ -1,3 +1,5 @@
+package structure.section;
+
 abstract public class Section {
 
     Section() {

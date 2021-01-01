@@ -1,4 +1,13 @@
+package data;
 
+
+import structure.Member;
+import structure.Material;
+import structure.section.Section;
+import structure.section.CircularSection;
+import structure.model.MaterialModel;
+import structure.model.LinearModel;
+import structure.model.BiLinearModel;
 import java.util.HashMap;
 
 public class StructureDataset {
@@ -14,7 +23,7 @@ public class StructureDataset {
     private HashMap<Integer, Double> axialForceMap;
     private int freeDispSize;
 
-    StructureDataset() {
+    public StructureDataset() {
         this.materialMap = new HashMap<>();
         this.sectionMap = new HashMap<>();
         this.nodeMap = new HashMap<>();

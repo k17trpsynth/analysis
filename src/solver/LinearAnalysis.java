@@ -1,4 +1,11 @@
+package solver;
 
+
+import structure.Member;
+import data.StructureDataset;
+import matrix.TransformationMatrix;
+import matrix.SmallTransformationMatrix;
+import matrix.ElementStiffnessMatrix;
 import java.util.ArrayList;
 import java.util.Objects;
 import org.ejml.data.DMatrixRMaj;

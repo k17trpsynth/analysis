@@ -1,3 +1,5 @@
+package structure.model;
+
 
 public class BiLinearModel extends MaterialModel {
 

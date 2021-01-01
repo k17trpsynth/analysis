@@ -1,4 +1,8 @@
+package main;
 
+
+import data.StructureDataset;
+import solver.TrussNonlinearAnalysis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
