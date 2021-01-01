@@ -1,6 +1,5 @@
 package data;
 
-
 import structure.Member;
 import structure.Material;
 import structure.section.Section;
@@ -17,7 +16,6 @@ public class StructureDataset {
     private HashMap<Integer, double[]> nodeMap;
     private HashMap<Integer, Member> elementMap;
     private HashMap<Integer, double[]> concentratedLoadMap;
-    private double[] gravityLoad;
     private HashMap<Integer, boolean[][]> connectionMap;
     private HashMap<Integer, boolean[]> confinementMap;
     private HashMap<Integer, Double> axialForceMap;
@@ -29,7 +27,6 @@ public class StructureDataset {
         this.nodeMap = new HashMap<>();
         this.elementMap = new HashMap<>();
         this.concentratedLoadMap = new HashMap<>();
-        this.gravityLoad = new double[3];
         this.connectionMap = new HashMap<>();
         this.confinementMap = new HashMap<>();
         this.axialForceMap = new HashMap<>();
@@ -70,10 +67,9 @@ public class StructureDataset {
 
     public void moveNode(int nodeNum, double dx, double dy, double dz) {
         double[] movedCoord = new double[]{
-                this.nodeMap.get(nodeNum)[0] + dx,
-                this.nodeMap.get(nodeNum)[1] + dy,
-                this.nodeMap.get(nodeNum)[2] + dz,
-        };
+            this.nodeMap.get(nodeNum)[0] + dx,
+            this.nodeMap.get(nodeNum)[1] + dy,
+            this.nodeMap.get(nodeNum)[2] + dz,};
         this.nodeMap.replace(nodeNum, movedCoord);
     }
 
@@ -83,17 +79,32 @@ public class StructureDataset {
 
     public void addConcentratedLoad(int nodeNum, double x, double y, double z) {
         if (this.concentratedLoadMap.containsKey(nodeNum)) {
-            x += this.concentratedLoadMap.get(nodeNum)[0];
-            y += this.concentratedLoadMap.get(nodeNum)[1];
-            z += this.concentratedLoadMap.get(nodeNum)[2];
+            this.concentratedLoadMap.get(nodeNum)[0] += x;
+            this.concentratedLoadMap.get(nodeNum)[1] += y;
+            this.concentratedLoadMap.get(nodeNum)[2] += z;
+        } else {
+            this.concentratedLoadMap.put(nodeNum, new double[]{x, y, z});
         }
-        this.concentratedLoadMap.put(nodeNum, new double[]{x, y, z});
     }
 
     public void addGravityLoad(double x, double y, double z) {
-        this.gravityLoad[0] += x;
-        this.gravityLoad[1] += y;
-        this.gravityLoad[2] += z;
+        double[] coords = new double[]{x, y, z};
+        this.getElements().keySet().forEach((Integer elementNum) -> {
+            Member mem = this.getElements().get(elementNum);
+            double[] fGravityGlobalElement = new double[3];
+            final double g = 9.8;
+            for (int i = 0; i < 3; i++) {
+                fGravityGlobalElement[i] = mem.getRho() * 1e-6 * mem.getA() * g * coords[i] * mem.getL() / 2;
+            }
+
+            if (this.concentratedLoadMap.containsKey(mem.getIndexI())) {
+                for (int i = 0; i < 3; i++) {
+                    this.concentratedLoadMap.get(mem.getIndexI())[i] += fGravityGlobalElement[i];
+                }
+            } else {
+                this.concentratedLoadMap.put(mem.getIndexI(), fGravityGlobalElement);
+            }
+        });
     }
 
     public void setConnection(int elementNum, int isThetaIxFree, int isThetaIyFree, int isThetaIzFree, int isThetaJxFree, int isThetaJyFree, int isThetaJzFree) {
@@ -170,10 +181,6 @@ public class StructureDataset {
 
     public HashMap<Integer, double[]> getConcentratedLoads() {
         return this.concentratedLoadMap;
-    }
-
-    public double[] getGravityLoad() {
-        return this.gravityLoad;
     }
 
     public HashMap<Integer, boolean[][]> getConnections() {

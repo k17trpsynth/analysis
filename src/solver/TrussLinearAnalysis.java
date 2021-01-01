@@ -153,49 +153,12 @@ public class TrussLinearAnalysis {
         DMatrixRMaj fAll = new DMatrixRMaj(3 * this.size, 1);
 
         if (Objects.nonNull(this.structureDataset.getConcentratedLoads())) {
-            DMatrixRMaj fConcentratedGlobal = new DMatrixRMaj(3 * this.size, 1);
 
             this.structureDataset.getConcentratedLoads().keySet().forEach((nodeNum) -> {
                 double[] concentratedLoad = this.structureDataset.getConcentratedLoads().get(nodeNum);
                 for (int i = 0; i < 3; i++) {
-                    fConcentratedGlobal.set(3 * this.nodeOrder.indexOf(nodeNum) + i, delta * concentratedLoad[i]);
+                    fAll.set(3 * this.nodeOrder.indexOf(nodeNum) + i, delta * concentratedLoad[i]);
                 }
-            });
-
-            CommonOps_DDRM.addEquals(fAll, fConcentratedGlobal);
-        }
-
-        if (Objects.nonNull(this.structureDataset.getGravityLoad())) {
-            DMatrixRMaj gravityGlobal = new DMatrixRMaj(this.structureDataset.getGravityLoad());
-
-            this.structureDataset.getElements().keySet().forEach((Integer elementNum) -> {
-                Member mem = this.structureDataset.getElements().get(elementNum);
-                double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();
-                double m = (mem.getNodeJ()[1] - mem.getNodeI()[1]) / mem.getL();
-                double n = (mem.getNodeJ()[2] - mem.getNodeI()[2]) / mem.getL();
-                SmallTransformationMatrix tInvT = new SmallTransformationMatrix(l, m, n);
-                CommonOps_DDRM.transpose(tInvT);
-                CommonOps_DDRM.invert(tInvT);
-                DMatrixRMaj gravityLocal = new DMatrixRMaj(3, 1);
-                CommonOps_DDRM.mult(tInvT, gravityGlobal, gravityLocal);
-                DMatrixRMaj fGravityLocal = new DMatrixRMaj(3, 1);
-                final double g = 9.8;
-
-                fGravityLocal.set(0, delta * mem.getRho() * 1e-6 * mem.getA() * g * gravityLocal.get(0) * mem.getL() / 2);
-                fGravityLocal.set(1, delta * mem.getRho() * 1e-6 * mem.getA() * g * gravityLocal.get(1) * mem.getL() / 2);
-                fGravityLocal.set(2, delta * mem.getRho() * 1e-6 * mem.getA() * g * gravityLocal.get(2) * mem.getL() / 2);
-
-                DMatrixRMaj fGravityGlobalElement = new DMatrixRMaj(3, 1);
-                SmallTransformationMatrix tT = new SmallTransformationMatrix(l, m, n);
-                CommonOps_DDRM.transpose(tT);
-                CommonOps_DDRM.mult(tT, fGravityLocal, fGravityGlobalElement);
-
-                DMatrixRMaj fGravityGlobal = new DMatrixRMaj(3 * this.size, 1);
-                for (int i = 0; i < 3; i++) {
-                    fGravityGlobal.set(3 * this.nodeOrder.indexOf(mem.getIndexI()) + i, fGravityGlobalElement.get(i));
-                    fGravityGlobal.set(3 * this.nodeOrder.indexOf(mem.getIndexJ()) + i, fGravityGlobalElement.get(i));
-                }
-                CommonOps_DDRM.addEquals(fAll, fGravityGlobal);
             });
         }
 
