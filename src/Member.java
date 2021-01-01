@@ -11,9 +11,8 @@ public class Member {
     private double[] nodeI;
     private double[] nodeJ;
     private double theta;
-    private final double N0;
 
-    Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta, double N0) {
+    Member(Material mat, Section sec, int indexI, int indexJ, double[] nodeI, double[] nodeJ, double theta) {
         this.mat = mat;
         this.A = sec.getA();
         this.Iy = sec.getIy();
@@ -25,7 +24,6 @@ public class Member {
         this.nodeI = nodeI;
         this.nodeJ = nodeJ;
         this.theta = theta;
-        this.N0 = N0;
     }
 
     public double getE(double sigma) {
@@ -78,9 +76,5 @@ public class Member {
 
     public double getTheta() {
         return this.theta;
-    }
-
-    public double getN0() {
-        return this.N0;
     }
 }

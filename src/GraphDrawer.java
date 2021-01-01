@@ -97,7 +97,7 @@ public class GraphDrawer {
 
                 XYSeries series = new XYSeries(codes[i] + " analyzed");
                 for (int j = 0; j < axialForces.size(); j++) {
-                    series.add(49.2 * j * 0.01, axialForces.get(j).get(i));
+                    series.add(49.2 * j * 0.01 + 83, axialForces.get(j).get(i));
                 }
                 collection.addSeries(series);
 
@@ -110,7 +110,7 @@ public class GraphDrawer {
 
                 series = new XYSeries(codes[i] + " measured");
                 for (int j = 0; j < axialForcesMeasured.size(); j++) {
-                    series.add(-axialForcesMeasured.get(j).get(0) - 83, axialForcesMeasured.get(j).get(i + 1) - initialAxialForce);
+                    series.add(-axialForcesMeasured.get(j).get(0), axialForcesMeasured.get(j).get(i + 1));
                 }
                 collection2.addSeries(series);
 

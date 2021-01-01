@@ -39,7 +39,7 @@ public class WhiteRhino2Analysis {
             }
             reader.close();
 
-            InputDataset input = new InputDataset();
+            StructureDataset input = new StructureDataset();
             input.setMaterial("steel", "linear", new double[]{205000}, 0.3, 7.8);
             input.setMaterial("steel_wire", "nonlinear", new double[]{0, 205000, 0, 0}, 0.3, 7.8);
 
@@ -76,40 +76,75 @@ public class WhiteRhino2Analysis {
                 input.setNode(nodeNum, x, y, z);
             }
 
-            input.setElement(1, "steel", "S1", 1, 6, 0, prestresses.get("S1-1") * 1e3);
-            input.setElement(2, "steel", "S1", 2, 7, 0, prestresses.get("S1-2") * 1e3);
-            input.setElement(3, "steel", "S1", 3, 8, 0, prestresses.get("S1-3") * 1e3);
-            input.setElement(4, "steel", "S1", 4, 9, 0, prestresses.get("S1-4") * 1e3);
-            input.setElement(5, "steel", "S1", 5, 10, 0, prestresses.get("S1-5") * 1e3);
+            input.setElement(1, "steel", "S1", 1, 6, 0);
+            input.setElement(2, "steel", "S1", 2, 7, 0);
+            input.setElement(3, "steel", "S1", 3, 8, 0);
+            input.setElement(4, "steel", "S1", 4, 9, 0);
+            input.setElement(5, "steel", "S1", 5, 10, 0);
 
-            input.setElement(6, "steel_wire", "T1-1", 1, 7, 0, prestresses.get("T1-1") * 1e3);
-            input.setElement(7, "steel_wire", "T1-2", 2, 8, 0, prestresses.get("T1-2") * 1e3);
-            input.setElement(8, "steel_wire", "T1-3", 3, 9, 0, prestresses.get("T1-3") * 1e3);
-            input.setElement(9, "steel_wire", "T1-4", 4, 10, 0, prestresses.get("T1-4") * 1e3);
-            input.setElement(10, "steel_wire", "T1-5", 5, 6, 0, prestresses.get("T1-5") * 1e3);
+            input.setElement(6, "steel_wire", "T1-1", 1, 7, 0);
+            input.setElement(7, "steel_wire", "T1-2", 2, 8, 0);
+            input.setElement(8, "steel_wire", "T1-3", 3, 9, 0);
+            input.setElement(9, "steel_wire", "T1-4", 4, 10, 0);
+            input.setElement(10, "steel_wire", "T1-5", 5, 6, 0);
 
-            input.setElement(11, "steel_wire", "T2-1", 1, 8, 0, prestresses.get("T2-1") * 1e3);
-            input.setElement(12, "steel_wire", "T2-2", 3, 10, 0, prestresses.get("T2-2") * 1e3);
-            input.setElement(13, "steel_wire", "T2-3", 4, 6, 0, prestresses.get("T2-3") * 1e3);
-            input.setElement(14, "steel_wire", "T2-4", 5, 7, 0, prestresses.get("T2-4") * 1e3);
+            input.setElement(11, "steel_wire", "T2-1", 1, 8, 0);
+            input.setElement(12, "steel_wire", "T2-2", 3, 10, 0);
+            input.setElement(13, "steel_wire", "T2-3", 4, 6, 0);
+            input.setElement(14, "steel_wire", "T2-4", 5, 7, 0);
 
-            input.setElement(15, "steel_wire", "T3-1", 6, 7, 0, prestresses.get("T3-1") * 1e3);
-            input.setElement(16, "steel_wire", "T3-2", 7, 8, 0, prestresses.get("T3-2") * 1e3);
-            input.setElement(17, "steel_wire", "T3-3", 8, 9, 0, prestresses.get("T3-3") * 1e3);
-            input.setElement(18, "steel_wire", "T3-4", 9, 10, 0, prestresses.get("T3-4") * 1e3);
-            input.setElement(19, "steel_wire", "T3-5", 10, 6, 0, prestresses.get("T3-5") * 1e3);
+            input.setElement(15, "steel_wire", "T3-1", 6, 7, 0);
+            input.setElement(16, "steel_wire", "T3-2", 7, 8, 0);
+            input.setElement(17, "steel_wire", "T3-3", 8, 9, 0);
+            input.setElement(18, "steel_wire", "T3-4", 9, 10, 0);
+            input.setElement(19, "steel_wire", "T3-5", 10, 6, 0);
 
-            input.setElement(20, "steel_wire", "T4-1", 1, 2, 0, prestresses.get("T4-1") * 1e3);
-            input.setElement(21, "steel_wire", "T4-2", 2, 3, 0, prestresses.get("T4-2") * 1e3);
-            input.setElement(22, "steel_wire", "T4-3", 3, 4, 0, prestresses.get("T4-3") * 1e3);
-            input.setElement(23, "steel_wire", "T4-4", 4, 5, 0, prestresses.get("T4-4") * 1e3);
-            input.setElement(24, "steel_wire", "T4-5", 5, 1, 0, prestresses.get("T4-5") * 1e3);
+            input.setElement(20, "steel_wire", "T4-1", 1, 2, 0);
+            input.setElement(21, "steel_wire", "T4-2", 2, 3, 0);
+            input.setElement(22, "steel_wire", "T4-3", 3, 4, 0);
+            input.setElement(23, "steel_wire", "T4-4", 4, 5, 0);
+            input.setElement(24, "steel_wire", "T4-5", 5, 1, 0);
 
-            input.setElement(25, "steel_wire", "T5-1", 6, 11, 0, prestresses.get("T5-1") * 1e3);
-            input.setElement(26, "steel_wire", "T5-2", 7, 11, 0, prestresses.get("T5-2") * 1e3);
-            input.setElement(27, "steel_wire", "T5-3", 8, 11, 0, prestresses.get("T5-3") * 1e3);
-            input.setElement(28, "steel_wire", "T5-4", 9, 11, 0, prestresses.get("T5-4") * 1e3);
-            input.setElement(29, "steel_wire", "T5-5", 10, 11, 0, prestresses.get("T5-5") * 1e3);
+            input.setElement(25, "steel_wire", "T5-1", 6, 11, 0);
+            input.setElement(26, "steel_wire", "T5-2", 7, 11, 0);
+            input.setElement(27, "steel_wire", "T5-3", 8, 11, 0);
+            input.setElement(28, "steel_wire", "T5-4", 9, 11, 0);
+            input.setElement(29, "steel_wire", "T5-5", 10, 11, 0);
+
+            input.setAxialForce(1, prestresses.get("S1-1") * 1e3);
+            input.setAxialForce(2, prestresses.get("S1-2") * 1e3);
+            input.setAxialForce(3, prestresses.get("S1-3") * 1e3);
+            input.setAxialForce(4, prestresses.get("S1-4") * 1e3);
+            input.setAxialForce(5, prestresses.get("S1-5") * 1e3);
+
+            input.setAxialForce(6, prestresses.get("T1-1") * 1e3);
+            input.setAxialForce(7, prestresses.get("T1-2") * 1e3);
+            input.setAxialForce(8, prestresses.get("T1-3") * 1e3);
+            input.setAxialForce(9, prestresses.get("T1-4") * 1e3);
+            input.setAxialForce(10, prestresses.get("T1-5") * 1e3);
+
+            input.setAxialForce(11, prestresses.get("T2-1") * 1e3);
+            input.setAxialForce(12, prestresses.get("T2-2") * 1e3);
+            input.setAxialForce(13, prestresses.get("T2-3") * 1e3);
+            input.setAxialForce(14, prestresses.get("T2-4") * 1e3);
+
+            input.setAxialForce(15, prestresses.get("T3-1") * 1e3);
+            input.setAxialForce(16, prestresses.get("T3-2") * 1e3);
+            input.setAxialForce(17, prestresses.get("T3-3") * 1e3);
+            input.setAxialForce(18, prestresses.get("T3-4") * 1e3);
+            input.setAxialForce(19, prestresses.get("T3-5") * 1e3);
+
+            input.setAxialForce(20, prestresses.get("T4-1") * 1e3);
+            input.setAxialForce(21, prestresses.get("T4-2") * 1e3);
+            input.setAxialForce(22, prestresses.get("T4-3") * 1e3);
+            input.setAxialForce(23, prestresses.get("T4-4") * 1e3);
+            input.setAxialForce(24, prestresses.get("T4-5") * 1e3);
+
+            input.setAxialForce(25, prestresses.get("T5-1") * 1e3);
+            input.setAxialForce(26, prestresses.get("T5-2") * 1e3);
+            input.setAxialForce(27, prestresses.get("T5-3") * 1e3);
+            input.setAxialForce(28, prestresses.get("T5-4") * 1e3);
+            input.setAxialForce(29, prestresses.get("T5-5") * 1e3);
 
             input.setConfinement(1, 0, 1, 1, 0, 0, 0);
             input.setConfinement(2, 0, 0, 1, 0, 0, 0);
@@ -123,16 +158,7 @@ public class WhiteRhino2Analysis {
             double delta = 0.01;
             //TrussLinearAnalysis analysis = new TrussLinearAnalysis(input);
             TrussNonlinearAnalysis analysis = new TrussNonlinearAnalysis(input, delta);
-            analysis.setForce();
             analysis.solve();
-            OutputDataset output = analysis.export();
-
-            writer = new FileWriter(new File(outDir + "displacement.csv"));
-
-            for (int i = 0; i < input.getFreeDispSize(); i++) {
-                writer.write(Double.toString(output.getDisplacements().get(i)) + "\n");
-            }
-            writer.close();
 
             /*
             writer = new FileWriter(new File(outDir + "axial_force.csv"));

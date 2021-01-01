@@ -1,7 +1,7 @@
 
 import java.util.HashMap;
 
-public class InputDataset {
+public class StructureDataset {
 
     private HashMap<String, Material> materialMap;
     private HashMap<String, Section> sectionMap;
@@ -11,9 +11,10 @@ public class InputDataset {
     private double[] gravityLoad;
     private HashMap<Integer, boolean[][]> connectionMap;
     private HashMap<Integer, boolean[]> confinementMap;
+    private HashMap<Integer, Double> axialForceMap;
     private int freeDispSize;
 
-    InputDataset() {
+    StructureDataset() {
         this.materialMap = new HashMap<>();
         this.sectionMap = new HashMap<>();
         this.nodeMap = new HashMap<>();
@@ -22,6 +23,7 @@ public class InputDataset {
         this.gravityLoad = new double[3];
         this.connectionMap = new HashMap<>();
         this.confinementMap = new HashMap<>();
+        this.axialForceMap = new HashMap<>();
     }
 
     public void setMaterial(String key, String materialType, double[] params, double gamma, double rho) {
@@ -57,8 +59,17 @@ public class InputDataset {
         this.nodeMap.put(nodeNum, new double[]{x, y, z});
     }
 
-    public void setElement(int elementNum, String materialKey, String sectionKey, int i, int j, double theta, double N0) {
-        this.elementMap.put(elementNum, new Member(this.materialMap.get(materialKey), this.sectionMap.get(sectionKey), i, j, this.nodeMap.get(i), this.nodeMap.get(j), theta, N0));
+    public void moveNode(int nodeNum, double dx, double dy, double dz) {
+        double[] movedCoord = new double[]{
+                this.nodeMap.get(nodeNum)[0] + dx,
+                this.nodeMap.get(nodeNum)[1] + dy,
+                this.nodeMap.get(nodeNum)[2] + dz,
+        };
+        this.nodeMap.replace(nodeNum, movedCoord);
+    }
+
+    public void setElement(int elementNum, String materialKey, String sectionKey, int i, int j, double theta) {
+        this.elementMap.put(elementNum, new Member(this.materialMap.get(materialKey), this.sectionMap.get(sectionKey), i, j, this.nodeMap.get(i), this.nodeMap.get(j), theta));
     }
 
     public void addConcentratedLoad(int nodeNum, double x, double y, double z) {
@@ -120,6 +131,14 @@ public class InputDataset {
         this.confinementMap.put(nodeNum, freeFlagList);
     }
 
+    public void setAxialForce(int elementNum, double axialForce) {
+        this.axialForceMap.put(elementNum, axialForce);
+    }
+
+    public void addAxialForce(int elementNum, double axialForce) {
+        this.axialForceMap.replace(elementNum, this.axialForceMap.get(elementNum) + axialForce);
+    }
+
     public Material getMaterial(String key) {
         return this.materialMap.get(key);
     }
@@ -154,6 +173,10 @@ public class InputDataset {
 
     public HashMap<Integer, boolean[]> getConfinements() {
         return this.confinementMap;
+    }
+
+    public double getAxialForce(int elementNum) {
+        return this.axialForceMap.get(elementNum);
     }
 
     public int getFreeDispSize() {

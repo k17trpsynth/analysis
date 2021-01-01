@@ -11,7 +11,7 @@ import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
 
 public class LinearAnalysis {
 
-    private InputDataset input;
+    private StructureDataset input;
     private OutputDataset output;
     private int size;
     private int freeDispSize;
@@ -20,7 +20,7 @@ public class LinearAnalysis {
     private DMatrixRMaj d;
     private DMatrixSparseCSC K;
 
-    LinearAnalysis(InputDataset input) {
+    LinearAnalysis(StructureDataset input) {
         this.input = input;
         this.output = new OutputDataset(input);
         this.size = input.getSize();

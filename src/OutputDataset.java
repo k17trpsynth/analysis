@@ -3,12 +3,12 @@ import java.util.HashMap;
 import org.ejml.data.DMatrixRMaj;
 
 public class OutputDataset {
-    private InputDataset input;
+    private StructureDataset input;
     private int size;
     private DMatrixRMaj d;
     private HashMap<Integer, Double> n;
 
-    OutputDataset(InputDataset input) {
+    OutputDataset(StructureDataset input) {
         this.input = input;
         this.size = input.getSize();
         this.d = new DMatrixRMaj(3 * this.size, 1);
