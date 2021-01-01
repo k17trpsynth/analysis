@@ -168,14 +168,15 @@ public class WhiteRhino2Analysis {
             //TrussLinearAnalysis analysis = new TrussLinearAnalysis(input);
             TrussNonlinearAnalysis analysis = new TrussNonlinearAnalysis(input, delta);
             analysis.solve();
+            StructureDataset output = analysis.exportDataset();
 
- /*
+            /*
             writer = new FileWriter(new File(outDir + "axial_force.csv"));
             for (int elementNum : input.getElements().keySet()) {
-                writer.write(Double.toString(output.getForces().get(elementNum)) + "\n");
+                writer.write(Double.toString(output.getAxialForce(elementNum)) + "\n");
             }
             writer.close();
-             */
+*/
         } catch (IOException e) {
             e.printStackTrace();
         }

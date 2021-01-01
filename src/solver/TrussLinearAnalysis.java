@@ -4,7 +4,6 @@ package solver;
 import structure.Member;
 import data.StructureDataset;
 import matrix.TrussStiffnessMatrix;
-import matrix.SmallTransformationMatrix;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
