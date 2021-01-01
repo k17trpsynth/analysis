@@ -12,7 +12,6 @@ import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
 public class LinearAnalysis {
 
     private StructureDataset input;
-    private OutputDataset output;
     private int size;
     private int freeDispSize;
     private ArrayList<Integer> nodeOrder;
@@ -22,7 +21,6 @@ public class LinearAnalysis {
 
     LinearAnalysis(StructureDataset input) {
         this.input = input;
-        this.output = new OutputDataset(input);
         this.size = input.getSize();
         this.freeDispSize = input.getFreeDispSize();
         this.nodeOrder = new ArrayList<>();
@@ -50,11 +48,6 @@ public class LinearAnalysis {
         KInv.print();
         solver.setA(this.K);
         solver.solve(this.f, this.d);
-    }
-
-    public OutputDataset export() {
-        this.output.setDisplacements(this.d);
-        return this.output;
     }
 
     public void setForce() {
