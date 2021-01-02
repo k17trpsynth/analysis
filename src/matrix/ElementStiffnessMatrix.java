@@ -1,10 +1,10 @@
 package matrix;
 
+import org.ejml.data.DMatrixRMaj;
 import structure.Member;
-import org.ejml.data.DMatrixSparseCSC;
 
 @SuppressWarnings({"serial", "unchecked"})
-public class ElementStiffnessMatrix extends DMatrixSparseCSC {
+public class ElementStiffnessMatrix extends DMatrixRMaj {
 
     public ElementStiffnessMatrix(Member mem) {
         super(12, 12);

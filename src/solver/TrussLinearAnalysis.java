@@ -7,12 +7,11 @@ import matrix.TrussStiffnessMatrix;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import matrix.DMatrixGeneral;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
-import org.ejml.interfaces.linsol.LinearSolverSparse;
-import org.ejml.sparse.FillReducing;
-import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
 
 public class TrussLinearAnalysis {
 
@@ -24,7 +23,7 @@ public class TrussLinearAnalysis {
     private ArrayList<Integer> elementOrder;
     private DMatrixRMaj f;
     private DMatrixRMaj d;
-    private DMatrixSparseCSC K;
+    private DMatrixGeneral K;
 
     public TrussLinearAnalysis(StructureDataset input) {
         this(input, 1);
@@ -47,23 +46,29 @@ public class TrussLinearAnalysis {
         input.getElements().keySet().forEach((elementNum) -> {
             this.elementOrder.add(elementNum);
         });
-        this.K = new DMatrixSparseCSC(this.freeDispSize, this.freeDispSize);
+        this.K = new DMatrixGeneral(this.freeDispSize, this.freeDispSize);
         this.createStiffnessMatrix();
         this.setForce(delta);
     }
 
     public void solve() {
-        LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> solver = LinearSolverFactory_DSCC.qr(FillReducing.NONE);
-        //System.out.println("f = ");
-        //this.f.print();
-        //System.out.println("K = ");
-        //this.K.print();
-        //DMatrixRMaj KInv = new DMatrixRMaj(this.freeDispSize, this.freeDispSize);
-        //CommonOps_DSCC.invert(this.K, KInv);
-        //System.out.println("KInv = ");
-        //KInv.print();
+        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.qr(this.freeDispSize, this.freeDispSize);
+        System.out.println("f = ");
+        this.f.print();
+        System.out.println("K = ");
+        this.K.print();
+        DMatrixRMaj KInv = new DMatrixRMaj(this.freeDispSize, this.freeDispSize);
+        CommonOps_DDRM.invert(this.K, KInv);
+        System.out.println("K-1 = ");
+        KInv.print();
+        DMatrixGeneral KPlus = K.generalizedInverse();
+        System.out.println("K+ = ");
+        KPlus.print();
+        /*
         solver.setA(this.K);
         solver.solve(this.f, this.d);
+*/
+        CommonOps_DDRM.mult(KPlus, this.f, this.d);
         this.updateState();
     }
 
@@ -160,6 +165,8 @@ public class TrussLinearAnalysis {
                 }
             });
         }
+        System.out.println("fAll = ");
+        fAll.print();
 
         int count = 0;
         for (int nodeNum : this.nodeOrder) {

@@ -2,7 +2,6 @@ package solver;
 
 
 import data.StructureDataset;
-import solver.TrussLinearAnalysis;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;

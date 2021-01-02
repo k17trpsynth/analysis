@@ -8,13 +8,11 @@ import matrix.SmallTransformationMatrix;
 import matrix.ElementStiffnessMatrix;
 import java.util.ArrayList;
 import java.util.Objects;
+import matrix.DMatrixGeneral;
 import org.ejml.data.DMatrixRMaj;
-import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.dense.row.CommonOps_DDRM;
-import org.ejml.interfaces.linsol.LinearSolverSparse;
-import org.ejml.sparse.FillReducing;
-import org.ejml.sparse.csc.CommonOps_DSCC;
-import org.ejml.sparse.csc.factory.LinearSolverFactory_DSCC;
+import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
+import org.ejml.interfaces.linsol.LinearSolverDense;
 
 public class LinearAnalysis {
 
@@ -24,7 +22,7 @@ public class LinearAnalysis {
     private ArrayList<Integer> nodeOrder;
     private DMatrixRMaj f;
     private DMatrixRMaj d;
-    private DMatrixSparseCSC K;
+    private DMatrixGeneral K;
 
     LinearAnalysis(StructureDataset input) {
         this.input = input;
@@ -38,19 +36,19 @@ public class LinearAnalysis {
 
         this.f = new DMatrixRMaj(this.freeDispSize, 1);
         this.d = new DMatrixRMaj(this.freeDispSize, 1);
-        this.K = new DMatrixSparseCSC(this.freeDispSize, this.freeDispSize);
+        this.K = new DMatrixGeneral(this.freeDispSize, this.freeDispSize);
     }
 
     public void solve() {
         this.setForce();
         this.createStiffnessMatrix();
-        LinearSolverSparse<DMatrixSparseCSC, DMatrixRMaj> solver = LinearSolverFactory_DSCC.qr(FillReducing.NONE);
+        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.qr(this.freeDispSize, this.freeDispSize);
         System.out.println("f = ");
         this.f.print();
         System.out.println("K = ");
         this.K.print();
         DMatrixRMaj KInv = new DMatrixRMaj(this.freeDispSize, this.freeDispSize);
-        CommonOps_DSCC.invert(this.K, KInv);
+        CommonOps_DDRM.invert(this.K, KInv);
         System.out.println("KInv = ");
         KInv.print();
         solver.setA(this.K);
@@ -104,9 +102,9 @@ public class LinearAnalysis {
 
                 DMatrixRMaj fGravityGlobalElement = new DMatrixRMaj(12, 1);
                 TransformationMatrix T = new TransformationMatrix(l, m, n, theta);
-                DMatrixSparseCSC TT = new DMatrixSparseCSC(12, 12);
-                CommonOps_DSCC.transpose(T, TT, null);
-                CommonOps_DSCC.mult(TT, fGravityLocal, fGravityGlobalElement);
+                DMatrixGeneral TT = new DMatrixGeneral(12, 12);
+                CommonOps_DDRM.transpose(T, TT);
+                CommonOps_DDRM.mult(TT, fGravityLocal, fGravityGlobalElement);
 
                 DMatrixRMaj fGravityGlobal = new DMatrixRMaj(6 * this.size, 1);
                 for (int i = 0; i < 6; i++) {
@@ -135,17 +133,17 @@ public class LinearAnalysis {
         this.input.getElements().keySet().forEach((Integer elementNum) -> {
             Member mem = this.input.getElements().get(elementNum);
             ElementStiffnessMatrix ki = new ElementStiffnessMatrix(mem);
-            DMatrixSparseCSC kiTmp = new DMatrixSparseCSC(12, 12);
-            DMatrixSparseCSC kiGlobal = new DMatrixSparseCSC(12, 12);
+            DMatrixGeneral kiTmp = new DMatrixGeneral(12, 12);
+            DMatrixGeneral kiGlobal = new DMatrixGeneral(12, 12);
             double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();
             double m = (mem.getNodeJ()[1] - mem.getNodeI()[1]) / mem.getL();
             double n = (mem.getNodeJ()[2] - mem.getNodeI()[2]) / mem.getL();
             double theta = mem.getTheta();
             TransformationMatrix T = new TransformationMatrix(l, m, n, theta);
-            DMatrixSparseCSC TT = new DMatrixSparseCSC(12, 12);
-            CommonOps_DSCC.transpose(T, TT, null);
-            CommonOps_DSCC.mult(ki, T, kiTmp);
-            CommonOps_DSCC.mult(TT, kiTmp, kiGlobal);
+            DMatrixGeneral TT = new DMatrixGeneral(12, 12);
+            CommonOps_DDRM.transpose(T, TT);
+            CommonOps_DDRM.mult(ki, T, kiTmp);
+            CommonOps_DDRM.mult(TT, kiTmp, kiGlobal);
             DMatrixRMaj Ki = new DMatrixRMaj(6 * this.size, 6 * this.size);
             for (int i = 0; i < 6; i++) {
                 if (i >= 3) {

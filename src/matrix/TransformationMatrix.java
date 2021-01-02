@@ -4,7 +4,7 @@ import matrix.SmallTransformationMatrix;
 import org.ejml.data.DMatrixSparseCSC;
 
 @SuppressWarnings({"serial", "unchecked"})
-public class TransformationMatrix extends DMatrixSparseCSC {
+public class TransformationMatrix extends DMatrixGeneral {
 
     public static void main(String[] args) {
         TransformationMatrix m = new TransformationMatrix(0, 0, 1, Math.PI);
