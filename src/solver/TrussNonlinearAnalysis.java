@@ -1,10 +1,10 @@
 package solver;
 
-
 import data.StructureDataset;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Objects;
 
 public class TrussNonlinearAnalysis {
 
@@ -23,27 +23,51 @@ public class TrussNonlinearAnalysis {
         this.delta = delta;
     }
 
-    public void solve() {
+    public void solve(FileWriter writer) {
         int stepSize = (int) (1 / this.delta);
         String baseDir = new File(".").getAbsoluteFile().getParent();
         String outDir = baseDir + "/out/";
         try {
-            FileWriter writer = new FileWriter(new File(outDir + "axial_force.csv"));
             int step = 1;
+            FileWriter dispWriter = new FileWriter(new File(outDir + "displacement.csv"));
             while (step <= stepSize) {
-                TrussLinearAnalysis linearAnalysis = new TrussLinearAnalysis(structureDataset, this.delta);
+                TrussLinearAnalysis linearAnalysis = new TrussLinearAnalysis(this.structureDataset, this.delta, true);
                 System.out.println("step: " + step + " / " + stepSize);
                 linearAnalysis.solve();
                 this.structureDataset = linearAnalysis.exportDataset();
-                for (int elementNum : this.structureDataset.getElements().keySet()) {
-                    writer.write(Double.toString(this.structureDataset.getAxialForce(elementNum) * 1e-3));
-                    System.out.println("N = " + this.structureDataset.getAxialForce(elementNum));
-                    writer.write(",");
+                /*
+                System.out.println("is in equilibrium = " + this.structureDataset.isInEquilibrium());
+                while (!this.structureDataset.isInEquilibrium()) {
+                    TrussLinearAnalysis analysis = new TrussLinearAnalysis(this.structureDataset, 1, false);
+                    analysis.solve();
+                    this.structureDataset = analysis.exportDataset();
                 }
-                writer.write("\n");
+*/
+                double norm = 0;
+                for (double x : this.structureDataset.getConcentratedLoads().get(11)) {
+                    norm += Math.pow(x, 2);
+                }
+                norm = Math.sqrt(norm);
+                if (Objects.nonNull(writer)) {
+                    writer.write(Double.toString(norm * 1e-3));
+                    writer.write(",");
+                    for (int elementNum : this.structureDataset.getElements().keySet()) {
+                        writer.write(Double.toString(this.structureDataset.getAxialForce(elementNum) * 1e-3));
+                        //System.out.println("N = " + this.structureDataset.getAxialForce(elementNum));
+                        writer.write(",");
+                    }
+                    writer.write("\n");
+                }
+                for (int nodeNum : this.structureDataset.getNodes().keySet()) {
+                    for (int i = 0; i < 3; i++) {
+                        double coord = this.structureDataset.getNodes().get(nodeNum)[i];
+                        dispWriter.write(coord + ",");
+                    }
+                }
+                dispWriter.write("\n");
                 step++;
             }
-            writer.close();
+            dispWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,11 +1,8 @@
 package main;
 
-
 import data.StructureDataset;
 import solver.TrussNonlinearAnalysis;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import solver.TrussLinearAnalysis;
 
 public class TestAnalysis {
 
@@ -22,10 +19,10 @@ public class TestAnalysis {
         input.setNode(4, 0, 3000, 0);
         input.setNode(5, 1500, 1500, 3000);
 
-        input.setElement(1, "steel_wire", "tension", 1, 2, 0);
-        input.setElement(2, "steel_wire", "tension", 2, 3, 0);
-        input.setElement(3, "steel_wire", "tension", 3, 4, 0);
-        input.setElement(4, "steel_wire", "tension", 4, 1, 0);
+        input.setElement(1, "steel", "compression", 1, 2, 0);
+        input.setElement(2, "steel", "compression", 2, 3, 0);
+        input.setElement(3, "steel", "compression", 3, 4, 0);
+        input.setElement(4, "steel", "compression", 4, 1, 0);
         input.setElement(5, "steel", "compression", 5, 1, 0);
         input.setElement(6, "steel", "compression", 5, 2, 0);
         input.setElement(7, "steel", "compression", 5, 3, 0);
@@ -36,30 +33,26 @@ public class TestAnalysis {
         input.setConfinement(3, 0, 0, 1, 0, 0, 0);
         input.setConfinement(4, 0, 0, 1, 0, 0, 0);
 
-        input.addGravityLoad(0, 0, -0.1);
+        input.addTotalLoad(5, 0, 0, -100 * 1e3);
+        input.addGravityLoad(0, 0, -1);
 
         double delta = 0.1;
-        //TrussLinearAnalysis analysis = new TrussLinearAnalysis(input);
-        TrussNonlinearAnalysis analysis = new TrussNonlinearAnalysis(input, delta);
+        TrussLinearAnalysis analysis = new TrussLinearAnalysis(input, true);
+        //TrussNonlinearAnalysis analysis = new TrussNonlinearAnalysis(input, delta);
         analysis.solve();
         StructureDataset output = analysis.exportDataset();
-        FileWriter writer = null;
-        try {
-            String baseDir = "/Users/Kota/Documents/architecture/kawaguchi_lab/white_rhino/";
-
-            writer = new FileWriter(new File(baseDir + "axial_force.csv"));
-            for (int elementNum : input.getElements().keySet()) {
-                writer.write(Double.toString(output.getAxialForce(elementNum)) + "\n");
+        System.out.println("Load = ");
+        for (int nodeNum : output.getConcentratedLoads().keySet()) {
+            System.out.print("[");
+            for (int i = 0; i < 3; i++) {
+                System.out.print(output.getConcentratedLoads().get(nodeNum)[i] + ", ");
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            System.out.println("]");
         }
+        System.out.println("Axial Force =");
+        for (int elementNum : output.getElements().keySet()) {
+            System.out.println(output.getAxialForce(elementNum));
+        }
+        System.out.println("is in equilibrium = " + output.isInEquilibrium());
     }
 }

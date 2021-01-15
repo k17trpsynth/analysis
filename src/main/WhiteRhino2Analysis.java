@@ -10,28 +10,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-import org.ejml.data.DMatrixRMaj;
-import org.ejml.dense.row.CommonOps_DDRM;
+import solver.TrussLinearAnalysis;
 
 public class WhiteRhino2Analysis {
 
     public static void main(String[] args) {
-        BufferedReader reader = null;
-        FileWriter writer = null;
 
         try {
             String baseDir = new File(".").getAbsoluteFile().getParent();
             String dataDir = baseDir + "/data/";
             String outDir = baseDir + "/out/";
-            reader = new BufferedReader(new FileReader(new File(dataDir + "coords_measured.csv")));
+            BufferedReader reader = new BufferedReader(new FileReader(new File(dataDir + "coords_measured.csv")));
             HashMap<Integer, ArrayList<Double>> coords = new HashMap<>();
             String line;
             while (Objects.nonNull(line = reader.readLine())) {
                 ArrayList<Double> coord = new ArrayList<>();
+                int nodeNum = Integer.parseInt(line.split(",")[0].replaceAll(" ", ""));
                 coord.add(Double.parseDouble(line.split(",")[1]));
                 coord.add(Double.parseDouble(line.split(",")[2]));
                 coord.add(Double.parseDouble(line.split(",")[3]));
-                coords.put(Integer.parseInt(line.split(",")[0].replaceAll(" ", "")), coord);
+                coords.put(nodeNum, coord);
+                System.out.println(nodeNum + " -> " + coord);
             }
             reader.close();
 
@@ -41,12 +40,15 @@ public class WhiteRhino2Analysis {
                 String code = line.split(",")[0].replaceAll(" ", "");
                 double prestress = Double.parseDouble(line.split(",")[1]);
                 prestresses.put(code, prestress);
+                System.out.println(code + " -> " + prestress);
             }
             reader.close();
 
             StructureDataset input = new StructureDataset();
             input.setMaterial("steel", "linear", new double[]{205000}, 0.3, 7.8);
-            input.setMaterial("steel_wire", "nonlinear", new double[]{0, 205000, 0, 0}, 0.3, 7.8);
+            //input.setMaterial("steel_wire", "nonlinear", new double[]{0, 205000, 0, 0}, 0.3, 7.8);
+            //input.setMaterial("steel_wire", "nonlinear", new double[]{0, 205000, 0, 0}, 0.3, 7.8);
+            input.setMaterial("steel_wire", "linear", new double[]{205000}, 0.3, 7.8);
 
             input.setSection("S1", "circular", new double[]{216.3, 12.7});
             input.setSection("T1-1", "circular", new double[]{36});
@@ -116,6 +118,47 @@ public class WhiteRhino2Analysis {
             input.setElement(28, "steel_wire", "T5-4", 9, 11, 0);
             input.setElement(29, "steel_wire", "T5-5", 10, 11, 0);
 
+            FileWriter writer3 = new FileWriter(new File(outDir + "length_analysis.csv"));
+            for (int elementNum : input.getElements().keySet()) {
+                writer3.write(elementNum + "," + input.getElements().get(elementNum).getL() + "\n");
+            }
+            writer3.close();
+
+            input.setElementLength(6, 6045.6);
+            input.setElementLength(7, 6069);
+            input.setElementLength(8, 6404.9);
+            input.setElementLength(9, 6657.8);
+            input.setElementLength(10, 6448.5);
+
+            input.setElementLength(11, 5894.5);
+            input.setElementLength(12, 6452.9);
+            input.setElementLength(13, 6405.2);
+            input.setElementLength(14, 6015.3);
+
+            input.setElementLength(15, 1997.4);
+            input.setElementLength(16, 1996.3);
+            input.setElementLength(17, 1995.6);
+            input.setElementLength(18, 1998);
+            input.setElementLength(19, 1997.6);
+
+            input.setElementLength(20, 5999.9);
+            input.setElementLength(21, 6000);
+            input.setElementLength(22, 6000.1);
+            input.setElementLength(23, 6000);
+            input.setElementLength(24, 5999.8);
+
+            input.setElementLength(25, 1973.5);
+            input.setElementLength(26, 1972.4);
+            input.setElementLength(27, 1971.7);
+            input.setElementLength(28, 1967.7);
+            input.setElementLength(29, 1973);
+
+            writer3 = new FileWriter(new File(outDir + "length_actual.csv"));
+            for (int elementNum : input.getElements().keySet()) {
+                writer3.write(elementNum + "," + input.getElements().get(elementNum).getL() + "\n");
+            }
+            writer3.close();
+
             input.setAxialForce(1, prestresses.get("S1-1") * 1e3);
             input.setAxialForce(2, prestresses.get("S1-2") * 1e3);
             input.setAxialForce(3, prestresses.get("S1-3") * 1e3);
@@ -151,32 +194,129 @@ public class WhiteRhino2Analysis {
             input.setAxialForce(28, prestresses.get("T5-4") * 1e3);
             input.setAxialForce(29, prestresses.get("T5-5") * 1e3);
 
+            /*
             input.setConfinement(1, 0, 1, 1, 0, 0, 0);
             input.setConfinement(2, 0, 0, 1, 0, 0, 0);
             input.setConfinement(3, 1, 0, 1, 0, 0, 0);
             input.setConfinement(4, 1, 0, 1, 0, 0, 0);
             input.setConfinement(5, 0, 0, 1, 0, 0, 0);
+            */
+            input.setConfinement(1, 1, 1, 1, 0, 0, 0);
+            input.setConfinement(2, 1, 1, 1, 0, 0, 0);
+            input.setConfinement(3, 1, 1, 1, 0, 0, 0);
+            input.setConfinement(4, 1, 1, 1, 0, 0, 0);
+            input.setConfinement(5, 1, 1, 1, 0, 0, 0);
 
-            input.addConcentratedLoad(11, -36.1 * 49.2 / 265.2 * 1e3, 13.3 * 49.2 / 265.2 * 1e3, -262.3 * 49.2 / 265.2 * 1e3);
-            //input.addConcentratedLoad(11, -36.1 * 1e3, 13.3 * 1e3, -262.3 * 1e3);
-
+            //input.addTotalLoad(11, -36.1 * 49.2 / 265.2 * 1e3, 13.3 * 49.2 / 265.2 * 1e3, -262.3 * 49.2 / 265.2 * 1e3);
+            //input.addTotalLoad(11, -36.1 * 1e3, 13.3 * 1e3, -262.3 * 1e3);
+            //input.addTotalLoad(11, -11.3 * 1e3, 0, -85.1 * 1e3);
             input.addGravityLoad(0, 0, -1);
 
-            input.isInEquilibrium();
+            //double alpha = 46.3 / 85.9;
+            //double alpha = 400 / 85.9;
+            double alpha = 83 / 85.9;
+            input.addTotalLoad(11, -11.3 * alpha * 1e3, 0, -85.1 * alpha * 1e3);
+            for (int nodeNum : input.getTotalLoads().keySet()) {
+                input.addConcentratedLoad(
+                        nodeNum,
+                        input.getTotalLoads().get(nodeNum)[0],
+                        input.getTotalLoads().get(nodeNum)[1],
+                        input.getTotalLoads().get(nodeNum)[2]
+                );
+            }
 
-            double delta = 0.01;
-            //TrussLinearAnalysis analysis = new TrussLinearAnalysis(input);
-            TrussNonlinearAnalysis analysis = new TrussNonlinearAnalysis(input, delta);
-            analysis.solve();
-            StructureDataset output = analysis.exportDataset();
+            // 不釣り合い力の確認
+            HashMap<Integer, double[]> disequilibriumForceMap = input.calculateDisequilibriumForce();
+            FileWriter writer2 = new FileWriter(new File(outDir + "disequilibrium_force.csv"));
+            for (int nodeNum : disequilibriumForceMap.keySet()) {
+                double[] disequilibriumForce = disequilibriumForceMap.get(nodeNum);
+                writer2.write(nodeNum + ",");
+                for (int i = 0; i < 3; i++) {
+                    if (!input.getConfinements().containsKey(nodeNum)
+                            || input.getConfinements().get(nodeNum)[i]) {
+                        writer2.write(disequilibriumForce[i] * 1e-3 + ",");
+                    } else {
+                        writer2.write(0 + ",");
+                    }
+                }
+                writer2.write("\n");
+            }
+            writer2.close();
+
 
             /*
-            writer = new FileWriter(new File(outDir + "axial_force.csv"));
-            for (int elementNum : input.getElements().keySet()) {
-                writer.write(Double.toString(output.getAxialForce(elementNum)) + "\n");
+            while (!input.isInEquilibrium()) {
+                TrussLinearAnalysis analysis = new TrussLinearAnalysis(input, 1, false);
+                analysis.solve();
+                input = analysis.exportDataset();
             }
+            */
+
+            /*
+            // ↓↓水谷さん説明用↓↓
+            FileWriter writerTmp = new FileWriter(new File(outDir + "modified_coords.csv"));
+            for (int nodeNum : input.getNodes().keySet()) {
+                double[] node = input.getNodes().get(nodeNum);
+                writerTmp.write(nodeNum + "," + node[0] + "," + node[1] + "," + node[2] + "\n");
+            }
+            writerTmp.close();
+            // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+            */
+
+            double delta = 1;
+
+            /*
+            input.clearTotalLoad();
+            input.addGravityLoad(0, 0, 1);
+            alpha = -83 / 85.9;
+            input.addTotalLoad(11, -11.3 * alpha * 1e3, 0, -85.1 * alpha * 1e3);
+            TrussNonlinearAnalysis analysis1 = new TrussNonlinearAnalysis(input, delta);
+            analysis1.solve(null);
+            input = analysis1.exportDataset();
+             */
+            //input.clearConcentratedLoad();
+            input.clearTotalLoad();
+            //input.addGravityLoad(0, 0, -1);
+            //input.addTotalLoad(11, -36.1 * 1e3, 13.3 * 1e3, -262.3 * 1e3);
+            alpha = (132.2 - 83) / 265.2;
+            input.addTotalLoad(11, alpha * -36.1 * 1e3, alpha * 13.3 * 1e3, alpha * -262.3 * 1e3);
+
+            FileWriter writer = new FileWriter(new File(outDir + "axial_force.csv"));
+            writer.write(Double.toString(83));
+            writer.write(",");
+            for (int elementNum : input.getElements().keySet()) {
+                writer.write(Double.toString(input.getAxialForce(elementNum) * 1e-3));
+                writer.write(",");
+            }
+            writer.write("\n");
+            TrussNonlinearAnalysis analysis2 = new TrussNonlinearAnalysis(input, delta);
+            analysis2.solve(writer);
+            input = analysis2.exportDataset();
+
+            /*
+            for (int elementNum : input.getElements().keySet()) {
+                writer.write(Double.toString(input.getAxialForce(elementNum) * 1e-3) + "\n");
+            }
+             */
             writer.close();
-*/
+
+            // 不釣り合い力の確認
+            disequilibriumForceMap = input.calculateDisequilibriumForce();
+            writer2 = new FileWriter(new File(outDir + "disequilibrium_force_after.csv"));
+            for (int nodeNum : disequilibriumForceMap.keySet()) {
+                double[] disequilibriumForce = disequilibriumForceMap.get(nodeNum);
+                writer2.write(nodeNum + ",");
+                for (int i = 0; i < 3; i++) {
+                    if (!input.getConfinements().containsKey(nodeNum)
+                            || input.getConfinements().get(nodeNum)[i]) {
+                        writer2.write(disequilibriumForce[i] * 1e-3 + ",");
+                    } else {
+                        writer2.write(0 + ",");
+                    }
+                }
+                writer2.write("\n");
+            }
+            writer2.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

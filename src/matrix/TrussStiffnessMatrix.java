@@ -1,6 +1,7 @@
 package matrix;
 
 
+import java.util.HashMap;
 import structure.Member;
 import org.ejml.data.DMatrixSparseCSC;
 import org.ejml.sparse.csc.CommonOps_DSCC;
@@ -8,12 +9,12 @@ import org.ejml.sparse.csc.CommonOps_DSCC;
 @SuppressWarnings({"serial", "unchecked"})
 public class TrussStiffnessMatrix extends DMatrixSparseCSC {
 
-    public TrussStiffnessMatrix(Member mem, double sigma) {
+    public TrussStiffnessMatrix(Member mem, HashMap<Integer, double[]> nodeMap, double sigma) {
         super(6, 6);
 
-        double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();
-        double m = (mem.getNodeJ()[1] - mem.getNodeI()[1]) / mem.getL();
-        double n = (mem.getNodeJ()[2] - mem.getNodeI()[2]) / mem.getL();
+        double l = (nodeMap.get(mem.getIndexJ())[0] - nodeMap.get(mem.getIndexI())[0]) / mem.getL();
+        double m = (nodeMap.get(mem.getIndexJ())[1] - nodeMap.get(mem.getIndexI())[1]) / mem.getL();
+        double n = (nodeMap.get(mem.getIndexJ())[2] - nodeMap.get(mem.getIndexI())[2]) / mem.getL();
 
         DMatrixSparseCSC t = new DMatrixSparseCSC(6, 1);
         DMatrixSparseCSC tT = new DMatrixSparseCSC(1, 6);

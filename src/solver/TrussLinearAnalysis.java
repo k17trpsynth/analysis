@@ -1,6 +1,5 @@
 package solver;
 
-
 import structure.Member;
 import data.StructureDataset;
 import matrix.TrussStiffnessMatrix;
@@ -10,12 +9,11 @@ import java.util.Objects;
 import matrix.DMatrixGeneral;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
-import org.ejml.dense.row.factory.LinearSolverFactory_DDRM;
-import org.ejml.interfaces.linsol.LinearSolverDense;
 
 public class TrussLinearAnalysis {
 
     private StructureDataset structureDataset;
+    private double delta;
     private int size;
     private int freeDispSize;
     private HashMap<Integer, boolean[]> confinementMap;
@@ -25,12 +23,13 @@ public class TrussLinearAnalysis {
     private DMatrixRMaj d;
     private DMatrixGeneral K;
 
-    public TrussLinearAnalysis(StructureDataset input) {
-        this(input, 1);
+    public TrussLinearAnalysis(StructureDataset input, boolean isInEquilibrium) {
+        this(input, 1, isInEquilibrium);
     }
 
-    TrussLinearAnalysis(StructureDataset input, double delta) {
+    public TrussLinearAnalysis(StructureDataset input, double delta, boolean isInEquilibrium) {
         this.structureDataset = input;
+        this.delta = delta;
         this.size = input.getSize();
         this.freeDispSize = input.getFreeDispSize();
         this.confinementMap = input.getConfinements();
@@ -48,11 +47,15 @@ public class TrussLinearAnalysis {
         });
         this.K = new DMatrixGeneral(this.freeDispSize, this.freeDispSize);
         this.createStiffnessMatrix();
-        this.setForce(delta);
+        if (isInEquilibrium) {
+            this.setForce();
+        } else {
+            this.setDisequilibriumForce();
+        }
     }
 
     public void solve() {
-        LinearSolverDense<DMatrixRMaj> solver = LinearSolverFactory_DDRM.qr(this.freeDispSize, this.freeDispSize);
+        /*
         System.out.println("f = ");
         this.f.print();
         System.out.println("K = ");
@@ -61,13 +64,17 @@ public class TrussLinearAnalysis {
         CommonOps_DDRM.invert(this.K, KInv);
         System.out.println("K-1 = ");
         KInv.print();
-        DMatrixGeneral KPlus = K.generalizedInverse();
+         */
+        DMatrixGeneral KPlus = this.K.generalizedInverse();
+        /*
         System.out.println("K+ = ");
         KPlus.print();
-        /*
+         */
+ /*
         solver.setA(this.K);
         solver.solve(this.f, this.d);
-*/
+         */
+        //this.stretchNodes();
         CommonOps_DDRM.mult(KPlus, this.f, this.d);
         this.updateState();
     }
@@ -76,12 +83,55 @@ public class TrussLinearAnalysis {
         return this.structureDataset;
     }
 
+    /*
+    public void stretchNodes() {
+        System.out.println("sretch nodes.");
+        while (true) {
+            double alpha = 0.01;
+            DMatrixGeneral KPlus = K.generalizedInverse();
+            DMatrixRMaj KKPlus = CommonOps_DDRM.mult(K, KPlus, null);
+            DMatrixRMaj IKKPlus = CommonOps_DDRM.add(-1, CommonOps_DDRM.identity(this.freeDispSize), KKPlus, null);
+            DMatrixRMaj f2 = CommonOps_DDRM.mult(IKKPlus, this.f, null);
+            //System.out.println("f2 = ");
+            //f2.print();
+            boolean isStretchable = (CommonOps_DDRM.elementSumAbs(f2) > 1);
+            System.out.println("is stretchable = " + isStretchable);
+            if (isStretchable) {
+                CommonOps_DDRM.scale(alpha, f2);
+                this.d = f2;
+                this.updateNodes();
+                this.createStiffnessMatrix();
+            } else {
+                break;
+            }
+        }
+        while (!this.structureDataset.isInEquilibrium()) {
+            System.out.println("not in equilibrium.");
+            DMatrixGeneral KPlus = K.generalizedInverse();
+            CommonOps_DDRM.mult(KPlus, this.f, this.d);
+            this.updateNodes();
+        }
+    }
+     */
     public void updateState() {
-        this.updateAxialForce();
-        this.updateNode();
+        this.updateLoad();
+        this.updateAxialForces();
+        this.updateNodes();
     }
 
-    public void updateAxialForce() {
+    public void updateLoad() {
+        System.out.println("Update load.");
+        for (int nodeNum : this.structureDataset.getTotalLoads().keySet()) {
+            double[] totalLoad = this.structureDataset.getTotalLoads().get(nodeNum);
+            double dnx = this.delta * totalLoad[0];
+            double dny = this.delta * totalLoad[1];
+            double dnz = this.delta * totalLoad[2];
+            this.structureDataset.addConcentratedLoad(nodeNum, dnx, dny, dnz);
+        }
+    }
+
+    public void updateAxialForces() {
+        System.out.println("Update axial forces.");
         double[] dAll = new double[3 * this.size];
         int count = 0;
         for (int i = 0; i < this.nodeOrder.size(); i++) {
@@ -98,16 +148,15 @@ public class TrussLinearAnalysis {
 
         this.structureDataset.getElements().keySet().forEach((elementNum) -> {
             Member mem = this.structureDataset.getElements().get(elementNum);
-            double l = (mem.getNodeJ()[0] - mem.getNodeI()[0]) / mem.getL();
-            double m = (mem.getNodeJ()[1] - mem.getNodeI()[1]) / mem.getL();
-            double n = (mem.getNodeJ()[2] - mem.getNodeI()[2]) / mem.getL();
+            double[] cos = new double[3];
+            for (int i = 0; i < 3; i++) {
+                cos[i] = (this.structureDataset.getNodes().get(mem.getIndexJ())[i] - this.structureDataset.getNodes().get(mem.getIndexI())[i]) / mem.getL();
+            }
             double dL = 0;
-            dL -= l * dAll[3 * this.nodeOrder.indexOf(mem.getIndexI())];
-            dL -= m * dAll[3 * this.nodeOrder.indexOf(mem.getIndexI()) + 1];
-            dL -= n * dAll[3 * this.nodeOrder.indexOf(mem.getIndexI()) + 2];
-            dL += l * dAll[3 * this.nodeOrder.indexOf(mem.getIndexJ())];
-            dL += m * dAll[3 * this.nodeOrder.indexOf(mem.getIndexJ()) + 1];
-            dL += n * dAll[3 * this.nodeOrder.indexOf(mem.getIndexJ()) + 2];
+            for (int i = 0; i < 3; i++) {
+                dL -= cos[i] * dAll[3 * this.nodeOrder.indexOf(mem.getIndexI()) + i];
+                dL += cos[i] * dAll[3 * this.nodeOrder.indexOf(mem.getIndexJ()) + i];
+            }
             double axialForce = this.structureDataset.getAxialForce(elementNum);
             double dN = mem.getE(axialForce / mem.getA()) * mem.getA() / mem.getL() * dL;
             this.structureDataset.addAxialForce(elementNum, dN);
@@ -119,11 +168,11 @@ public class TrussLinearAnalysis {
         //System.out.println("]");
     }
 
-    public void updateNode() {
+    public void updateNodes() {
+        System.out.println("Update nodes.");
         ArrayList<int[]> dispArray = new ArrayList<>();
         for (int i = 0; i < this.nodeOrder.size(); i++) {
             int nodeNum = this.nodeOrder.get(i);
-            System.out.println("i = " + i + ", nodeNum = " + nodeNum);
             for (int j = 0; j < 3; j++) {
                 if (this.confinementMap.containsKey(nodeNum)) {
                     if (this.confinementMap.get(nodeNum)[j]) {
@@ -153,20 +202,42 @@ public class TrussLinearAnalysis {
         }
     }
 
-    public void setForce(double delta) {
+    public void setForce() {
         DMatrixRMaj fAll = new DMatrixRMaj(3 * this.size, 1);
 
-        if (Objects.nonNull(this.structureDataset.getConcentratedLoads())) {
-
-            this.structureDataset.getConcentratedLoads().keySet().forEach((nodeNum) -> {
-                double[] concentratedLoad = this.structureDataset.getConcentratedLoads().get(nodeNum);
+        if (Objects.nonNull(this.structureDataset.getTotalLoads())) {
+            this.structureDataset.getTotalLoads().keySet().forEach((nodeNum) -> {
+                double[] totalLoad = this.structureDataset.getTotalLoads().get(nodeNum);
                 for (int i = 0; i < 3; i++) {
-                    fAll.set(3 * this.nodeOrder.indexOf(nodeNum) + i, delta * concentratedLoad[i]);
+                    fAll.set(3 * this.nodeOrder.indexOf(nodeNum) + i, this.delta * totalLoad[i]);
                 }
             });
         }
-        System.out.println("fAll = ");
-        fAll.print();
+
+        int count = 0;
+        for (int nodeNum : this.nodeOrder) {
+            for (int i = 0; i < 3; i++) {
+                if (this.confinementMap.containsKey(nodeNum) && !this.confinementMap.get(nodeNum)[i]) {
+                } else {
+                    this.f.set(count, fAll.get(3 * this.nodeOrder.indexOf(nodeNum) + i));
+                    count++;
+                }
+            }
+        }
+    }
+
+    public void setDisequilibriumForce() {
+        DMatrixRMaj fAll = new DMatrixRMaj(3 * this.size, 1);
+        HashMap<Integer, double[]> disequilibriumForce = this.structureDataset.calculateDisequilibriumForce();
+
+        if (Objects.nonNull(disequilibriumForce)) {
+            disequilibriumForce.keySet().forEach((nodeNum) -> {
+                double[] disequilibriumF = disequilibriumForce.get(nodeNum);
+                for (int i = 0; i < 3; i++) {
+                    fAll.set(3 * this.nodeOrder.indexOf(nodeNum) + i, this.delta * disequilibriumF[i]);
+                }
+            });
+        }
 
         int count = 0;
         for (int nodeNum : this.nodeOrder) {
@@ -185,7 +256,7 @@ public class TrussLinearAnalysis {
         this.structureDataset.getElements().keySet().forEach((Integer elementNum) -> {
             Member mem = this.structureDataset.getElements().get(elementNum);
             double sigma = this.structureDataset.getAxialForce(elementNum) / mem.getA();
-            TrussStiffnessMatrix kiGlobal = new TrussStiffnessMatrix(mem, sigma);
+            TrussStiffnessMatrix kiGlobal = new TrussStiffnessMatrix(mem, this.structureDataset.getNodes(), sigma);
             DMatrixRMaj Ki = new DMatrixRMaj(3 * this.size, 3 * this.size);
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
